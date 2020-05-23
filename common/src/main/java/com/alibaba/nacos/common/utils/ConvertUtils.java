@@ -25,6 +25,13 @@ public final class ConvertUtils {
 
     private static final String NULL_STR = "null";
 
+    private static final int MAXIMUM_CAPACITY = 1 << 30;
+
+    public static int convertPow4Two(int num) {
+        int n = -1 >>> Integer.numberOfLeadingZeros(num - 1);
+        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    }
+
     public static int toInt(String val, int defaultValue) {
         if (StringUtils.equalsIgnoreCase(val, NULL_STR)) {
             return defaultValue;

@@ -56,17 +56,25 @@ public class ProtocolManager
 
 	private CPProtocol cpProtocol;
 	private APProtocol apProtocol;
+	private final ConsistentHash consistentHash = ConsistentHash.getInstance();
 
-	@Autowired
-	private ServerMemberManager memberManager;
+	private final ServerMemberManager memberManager;
 
 	private boolean apInit = false;
 	private boolean cpInit = false;
 
+	public ProtocolManager(ServerMemberManager memberManager) {
+		this.memberManager = memberManager;
+	}
+
 	@PostConstruct
 	public void init() {
-		this.memberManager = memberManager;
+		this.consistentHash.init(memberManager.allMembers());
 		NotifyCenter.registerSubscribe(this);
+	}
+
+	public ConsistentHash getConsistentHash() {
+		return consistentHash;
 	}
 
 	// delay init protocol

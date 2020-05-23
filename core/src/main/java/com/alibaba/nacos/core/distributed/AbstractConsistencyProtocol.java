@@ -20,6 +20,8 @@ import com.alibaba.nacos.consistency.Config;
 import com.alibaba.nacos.consistency.ConsistencyProtocol;
 import com.alibaba.nacos.consistency.LogProcessor;
 import com.alibaba.nacos.consistency.ProtocolMetaData;
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,9 +36,14 @@ public abstract class AbstractConsistencyProtocol<T extends Config, L extends Lo
 
     protected Map<String, L> processorMap = Collections.synchronizedMap(new HashMap<>());
 
-    public void loadLogProcessor(List<L> logProcessors) {
+    public void loadLogProcessor(Collection<L> logProcessors) {
         logProcessors.forEach(logDispatcher -> processorMap
                 .put(logDispatcher.group(), logDispatcher));
+    }
+
+    protected L findProcessor(final String group) {
+        L p = processorMap.get(group);
+        return p;
     }
 
     protected Map<String, L> allProcessor() {
