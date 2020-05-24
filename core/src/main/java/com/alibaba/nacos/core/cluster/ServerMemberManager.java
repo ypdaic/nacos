@@ -237,6 +237,10 @@ public class ServerMemberManager
 		return this.self;
 	}
 
+	public boolean isSelf(Member target) {
+		return Objects.equals(target, self);
+	}
+
 	public Collection<Member> allMembers() {
 		// We need to do a copy to avoid affecting the real data
 		HashSet<Member> set = new HashSet<>(serverList.values());

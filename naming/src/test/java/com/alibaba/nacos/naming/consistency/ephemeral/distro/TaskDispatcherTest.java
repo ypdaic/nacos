@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.naming.consistency.ephemeral.distro;
 
+import com.alibaba.nacos.core.distributed.distro.core.TaskDispatcher;
 import com.alibaba.nacos.naming.misc.GlobalConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,16 +30,16 @@ public class TaskDispatcherTest {
 
     @Before
     public void init() {
-        taskDispatcher = new TaskDispatcher();
+        taskDispatcher = new TaskDispatcher(null, null);
         GlobalConfig conf = new GlobalConfig();
         ReflectionTestUtils.setField(conf, "taskDispatchThreadCount", 3);
         ReflectionTestUtils.setField(taskDispatcher, "partitionConfig", conf);
-        taskDispatcher.init();
+        taskDispatcher.start();
     }
 
     @Test
     public void testAddTask() {
         char[] chars = new char[]{2325, 9, 30, 12, 2};
-        taskDispatcher.addTask(new String(chars));
+        taskDispatcher.addTask("nacos", new String(chars));
     }
 }

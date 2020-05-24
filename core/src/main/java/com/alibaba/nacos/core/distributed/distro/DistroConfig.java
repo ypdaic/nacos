@@ -16,6 +16,7 @@
  */
 package com.alibaba.nacos.core.distributed.distro;
 
+import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.consistency.Config;
 import com.alibaba.nacos.consistency.ap.LogProcessor4AP;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,55 +27,82 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 @Component
 @ConfigurationProperties(prefix = "nacos.core.protocol.distro")
-public class DsitroConfig implements Config<LogProcessor4AP> {
+public class DistroConfig implements Config<LogProcessor4AP> {
 
 	private Map<String, String> data = Collections.synchronizedMap(new HashMap<>());
 	private String selfAddress;
-	private Set<String> members = Collections.synchronizedSet(new HashSet<>());
+	private volatile Set<String> members = Collections.unmodifiableSet(new HashSet<>());
+
+	private static final AtomicReferenceFieldUpdater<DistroConfig, Set> UPDATER =
+			AtomicReferenceFieldUpdater
+					.newUpdater(DistroConfig.class, Set.class, "members");
 
 	@Override
-	public void setMembers(String self, Set<String> members) {
-
-	}
-
-	@Override
-	public void addMembers(Set<String> members) {
-
-	}
-
-	@Override
-	public void removeMembers(Set<String> members) {
-
+	public void updateMembers(String self, Set<String> members) {
+		this.selfAddress = self;
+		UPDATER.compareAndSet(this, members, Collections.unmodifiableSet(members));
 	}
 
 	@Override
 	public String getSelfMember() {
-		return null;
+		return selfAddress;
 	}
 
 	@Override
 	public Set<String> getMembers() {
-		return null;
+		return members;
+	}
+
+	@Override
+	public void addMembers(Set<String> members) {
+		HashSet<String> strings = new HashSet<>(this.members);
+		strings.addAll(members);
+		UPDATER.compareAndSet(this, members, Collections.unmodifiableSet(members));
+	}
+
+	@Override
+	public void removeMembers(Set<String> members) {
+		HashSet<String> strings = new HashSet<>(this.members);
+		strings.removeAll(members);
+		UPDATER.compareAndSet(this, members, Collections.unmodifiableSet(members));
+	}
+
+	public Map<String, String> getData() {
+		return data;
+	}
+
+	public void setData(Map<String, String> data) {
+		this.data = Collections.synchronizedMap(data);
 	}
 
 	@Override
 	public void setVal(String key, String value) {
-
+		data.put(key, value);
 	}
 
 	@Override
 	public String getVal(String key) {
-		return null;
+		return data.get(key);
 	}
 
 	@Override
 	public String getValOfDefault(String key, String defaultVal) {
-		return null;
+		return data.getOrDefault(key, defaultVal);
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return JacksonUtils.toJson(data);
+		} catch (Exception e) {
+			return String.valueOf(data);
+		}
 	}
 }

@@ -21,6 +21,7 @@ import com.alibaba.nacos.common.utils.ConvertUtils;
 import com.alibaba.nacos.core.cluster.Member;
 import com.alibaba.nacos.core.cluster.MemberChangeEvent;
 import com.alibaba.nacos.core.cluster.MemberChangeListener;
+import com.alibaba.nacos.core.cluster.ServerMemberManager;
 import com.alibaba.nacos.core.notify.NotifyCenter;
 import com.alibaba.nacos.core.utils.ApplicationUtils;
 import com.google.common.hash.HashFunction;
@@ -60,10 +61,13 @@ public final class ConsistentHash implements MemberChangeListener {
 
 	private int numberOfReplicas = 64;
 
+	private ServerMemberManager manager;
+
 	private ConsistentHash() {
 	}
 
-	void init(Collection<Member> members) {
+	void init(Collection<Member> members, ServerMemberManager manager) {
+		this.manager = manager;
 		int num = ApplicationUtils.getProperty(CONSISTENT_HASH_NUM_REPLICAS, Integer.class, numberOfReplicas);
 		this.numberOfReplicas = ConvertUtils.convertPow4Two(num);
 
@@ -71,16 +75,21 @@ public final class ConsistentHash implements MemberChangeListener {
 	}
 
 	public Member distro(Object key) {
+		Objects.requireNonNull(key, "key");
 		if (circle.isEmpty()) {
 			return null;
 		}
-
 		int hash = function.hashString(Objects.toString(key), StandardCharsets.UTF_8).asInt();
 		if (!circle.containsKey(hash)) {
 			SortedMap<Integer, Member> tailMap = circle.tailMap(hash);
 			hash = tailMap.isEmpty() ? circle.firstKey() : tailMap.firstKey();
 		}
 		return circle.get(hash);
+	}
+
+	public boolean responibleBySelf(Object key) {
+		Member member = distro(key);
+		return manager.isSelf(member);
 	}
 
 	private void adjustCircle(Collection<Member> members) {

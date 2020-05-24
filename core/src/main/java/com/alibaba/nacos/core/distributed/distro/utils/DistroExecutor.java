@@ -18,10 +18,12 @@ package com.alibaba.nacos.core.distributed.distro.utils;
 
 import com.alibaba.nacos.common.executor.ExecutorFactory;
 import com.alibaba.nacos.common.executor.NameThreadFactory;
-import com.alibaba.nacos.core.distributed.distro.DsitroConfig;
-import com.alibaba.nacos.core.distributed.raft.JRaftServer;
+import com.alibaba.nacos.core.distributed.distro.DistroConfig;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
@@ -32,22 +34,43 @@ public final class DistroExecutor {
 
 	private static ScheduledExecutorService distroCommonExecutor;
 
-	private static final String OWNER = JRaftServer.class.getName();
+	private static ScheduledExecutorService dataSyncExecutor;
+
+	private static ScheduledExecutorService taskDispatchExecutor;
+
+	private static long PARTITION_DATA_TIMED_SYNC_INTERVAL = TimeUnit.SECONDS.toMillis(5);
 
 	private DistroExecutor() {
 	}
 
-	public static void init(DsitroConfig config) {
+	public static void init(DistroConfig config) {
 
 		distroCommonExecutor = ExecutorFactory.newScheduledExecutorService(GROUP, 8,
-				new NameThreadFactory(
-						"com.alibaba.nacos.core.protocol.distro-common"));
+				new NameThreadFactory("com.alibaba.nacos.core.protocol.distro-common"));
 
+		dataSyncExecutor = ExecutorFactory.newScheduledExecutorService(GROUP,
+				Runtime.getRuntime().availableProcessors(),
+				new NameThreadFactory("com.alibaba.nacos.core.protocol.distro.data-syncer"));
 
+		taskDispatchExecutor = ExecutorFactory.newScheduledExecutorService(GROUP, Runtime.getRuntime().availableProcessors(),
+				new NameThreadFactory("com.alibaba.nacos.naming.distro.task.dispatcher"));
 	}
 
 	public static void executeByCommon(Runnable r) {
 		distroCommonExecutor.execute(r);
+	}
+
+	public static void submitDataSync(Runnable runnable, long delay) {
+		dataSyncExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+	}
+
+	public static void schedulePartitionDataTimedSync(Runnable runnable) {
+		dataSyncExecutor.scheduleWithFixedDelay(runnable, PARTITION_DATA_TIMED_SYNC_INTERVAL,
+				PARTITION_DATA_TIMED_SYNC_INTERVAL, TimeUnit.MILLISECONDS);
+	}
+
+	public static void submitTaskDispatch(Runnable runnable) {
+		taskDispatchExecutor.submit(runnable);
 	}
 
 }

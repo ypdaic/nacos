@@ -507,7 +507,7 @@ public class JRaftServer {
 				}
 			}
 		});
-		this.raftConfig.setMembers(localPeerId.toString(), newPeers);
+		this.raftConfig.updateMembers(localPeerId.toString(), newPeers);
 
 		return successCnt.get() == multiRaftGroup.size();
 	}

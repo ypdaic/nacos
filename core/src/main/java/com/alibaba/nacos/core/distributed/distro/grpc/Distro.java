@@ -15,6 +15,11 @@ public final class Distro {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_Record_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_Record_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_Value_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -25,6 +30,11 @@ public final class Distro {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_Value_DataEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_Value_ExtendInfoEntry_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_Value_ExtendInfoEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_Checksum_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -34,6 +44,11 @@ public final class Distro {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_Checksum_DataEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_Checksum_ExtendInfoEntry_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_Checksum_ExtendInfoEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_Request_descriptor;
   static final 
@@ -63,55 +78,79 @@ public final class Distro {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\014Distro.proto\"c\n\005Value\022\r\n\005group\030\001 \001(\t\022\036" +
-      "\n\004data\030\002 \003(\0132\020.Value.DataEntry\032+\n\tDataEn" +
-      "try\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\014:\0028\001\"i\n\010C" +
-      "hecksum\022\r\n\005group\030\001 \001(\t\022!\n\004data\030\002 \003(\0132\023.C" +
-      "hecksum.DataEntry\032+\n\tDataEntry\022\013\n\003key\030\001 " +
-      "\001(\t\022\r\n\005value\030\002 \001(\014:\0028\001\"\207\001\n\007Request\022\r\n\005gr" +
-      "oup\030\001 \001(\t\022\014\n\004keys\030\002 \003(\t\022,\n\nextendInfo\030\003 " +
-      "\003(\0132\030.Request.ExtendInfoEntry\0321\n\017ExtendI" +
-      "nfoEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001" +
-      "\"\211\001\n\010Response\022\r\n\005group\030\001 \001(\t\022\014\n\004data\030\002 \001" +
-      "(\014\022-\n\nextendInfo\030\003 \003(\0132\031.Response.Extend" +
-      "InfoEntry\0321\n\017ExtendInfoEntry\022\013\n\003key\030\001 \001(" +
-      "\t\022\r\n\005value\030\002 \001(\t:\0028\0012\204\001\n\rDistroService\022!" +
-      "\n\006onSync\022\006.Value\032\t.Response\"\000(\0010\001\022*\n\014syn" +
-      "cCheckSum\022\t.Checksum\032\t.Response\"\000(\0010\001\022$\n" +
-      "\007acquire\022\010.Request\032\t.Response\"\000(\0010\001B2\n.c" +
-      "om.alibaba.nacos.core.distributed.distro" +
-      ".grpcP\001b\006proto3"
+      "\n\014Distro.proto\"(\n\006Record\022\014\n\004data\030\001 \001(\014\022\020" +
+      "\n\010checkSum\030\002 \001(\t\"\313\001\n\005Value\022\r\n\005group\030\001 \001(" +
+      "\t\022\036\n\004data\030\002 \003(\0132\020.Value.DataEntry\022*\n\next" +
+      "endInfo\030\003 \003(\0132\026.Value.ExtendInfoEntry\0324\n" +
+      "\tDataEntry\022\013\n\003key\030\001 \001(\t\022\026\n\005value\030\002 \001(\0132\007" +
+      ".Record:\0028\001\0321\n\017ExtendInfoEntry\022\013\n\003key\030\001 " +
+      "\001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\313\001\n\010Checksum\022\r\n\005g" +
+      "roup\030\001 \001(\t\022!\n\004data\030\002 \003(\0132\023.Checksum.Data" +
+      "Entry\022-\n\nextendInfo\030\003 \003(\0132\031.Checksum.Ext" +
+      "endInfoEntry\032+\n\tDataEntry\022\013\n\003key\030\001 \001(\t\022\r" +
+      "\n\005value\030\002 \001(\t:\0028\001\0321\n\017ExtendInfoEntry\022\013\n\003" +
+      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\207\001\n\007Request" +
+      "\022\r\n\005group\030\001 \001(\t\022\014\n\004keys\030\002 \003(\t\022,\n\nextendI" +
+      "nfo\030\003 \003(\0132\030.Request.ExtendInfoEntry\0321\n\017E" +
+      "xtendInfoEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001" +
+      "(\t:\0028\001\"\211\001\n\010Response\022\r\n\005group\030\001 \001(\t\022\014\n\004da" +
+      "ta\030\002 \001(\014\022-\n\nextendInfo\030\003 \003(\0132\031.Response." +
+      "ExtendInfoEntry\0321\n\017ExtendInfoEntry\022\013\n\003ke" +
+      "y\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\0012\204\001\n\rDistroSer" +
+      "vice\022!\n\006onSync\022\006.Value\032\t.Response\"\000(\0010\001\022" +
+      "*\n\014syncCheckSum\022\t.Checksum\032\t.Response\"\000(" +
+      "\0010\001\022$\n\007acquire\022\010.Request\032\t.Response\"\000(\0010" +
+      "\001B2\n.com.alibaba.nacos.core.distributed." +
+      "distro.grpcP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_Value_descriptor =
+    internal_static_Record_descriptor =
       getDescriptor().getMessageTypes().get(0);
+    internal_static_Record_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_Record_descriptor,
+        new String[] { "Data", "CheckSum", });
+    internal_static_Value_descriptor =
+      getDescriptor().getMessageTypes().get(1);
     internal_static_Value_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Value_descriptor,
-        new String[] { "Group", "Data", });
+        new String[] { "Group", "Data", "ExtendInfo", });
     internal_static_Value_DataEntry_descriptor =
       internal_static_Value_descriptor.getNestedTypes().get(0);
     internal_static_Value_DataEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Value_DataEntry_descriptor,
         new String[] { "Key", "Value", });
+    internal_static_Value_ExtendInfoEntry_descriptor =
+      internal_static_Value_descriptor.getNestedTypes().get(1);
+    internal_static_Value_ExtendInfoEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_Value_ExtendInfoEntry_descriptor,
+        new String[] { "Key", "Value", });
     internal_static_Checksum_descriptor =
-      getDescriptor().getMessageTypes().get(1);
+      getDescriptor().getMessageTypes().get(2);
     internal_static_Checksum_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Checksum_descriptor,
-        new String[] { "Group", "Data", });
+        new String[] { "Group", "Data", "ExtendInfo", });
     internal_static_Checksum_DataEntry_descriptor =
       internal_static_Checksum_descriptor.getNestedTypes().get(0);
     internal_static_Checksum_DataEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Checksum_DataEntry_descriptor,
         new String[] { "Key", "Value", });
+    internal_static_Checksum_ExtendInfoEntry_descriptor =
+      internal_static_Checksum_descriptor.getNestedTypes().get(1);
+    internal_static_Checksum_ExtendInfoEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_Checksum_ExtendInfoEntry_descriptor,
+        new String[] { "Key", "Value", });
     internal_static_Request_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_Request_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Request_descriptor,
@@ -123,7 +162,7 @@ public final class Distro {
         internal_static_Request_ExtendInfoEntry_descriptor,
         new String[] { "Key", "Value", });
     internal_static_Response_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_Response_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Response_descriptor,

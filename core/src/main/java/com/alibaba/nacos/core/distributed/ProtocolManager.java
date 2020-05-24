@@ -29,7 +29,6 @@ import com.alibaba.nacos.core.notify.NotifyCenter;
 import com.alibaba.nacos.core.utils.ApplicationUtils;
 import com.alibaba.nacos.core.utils.ClassUtils;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.ContextStartedEvent;
@@ -69,7 +68,7 @@ public class ProtocolManager
 
 	@PostConstruct
 	public void init() {
-		this.consistentHash.init(memberManager.allMembers());
+		this.consistentHash.init(memberManager.allMembers(), memberManager);
 		NotifyCenter.registerSubscribe(this);
 	}
 
@@ -137,13 +136,13 @@ public class ProtocolManager
 		final String self = selfMember.getIp() + ":" + Integer.parseInt(String.valueOf(
 				selfMember.getExtendVal(MemberMetaDataConstants.RAFT_PORT)));
 		Set<String> others = toCPMembersInfo(memberManager.allMembers());
-		config.setMembers(self, others);
+		config.updateMembers(self, others);
 	}
 
 	private void injectMembers4AP(Config config) {
 		final String self = memberManager.getSelf().getAddress();
 		Set<String> others = toAPMembersInfo(memberManager.allMembers());
-		config.setMembers(self, others);
+		config.updateMembers(self, others);
 	}
 
 	@Override

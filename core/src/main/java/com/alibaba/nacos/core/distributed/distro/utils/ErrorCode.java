@@ -21,7 +21,9 @@ package com.alibaba.nacos.core.distributed.distro.utils;
  */
 public enum ErrorCode {
 
-	DISTRO_START_FAILED(6000, "DistroServer start failed")
+	DISTRO_START_FAILED(6000, "DistroServer start failed"),
+
+	SYNC_CHECKSUM_ERROR(6001, "sync checksum failed");
 
 	;
 

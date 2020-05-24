@@ -73,4 +73,34 @@ public final class ThreadUtils {
 
     private final static int THREAD_MULTIPLER = 2;
 
+    /**
+     * Provide a number between 0(inclusive) and {@code upperLimit}(exclusive) for the given {@code string},
+     * the number will be nearly uniform distribution.
+     * <p>
+     * <p>
+     *
+     * e.g. Assume there's an array which contains some IP of the servers provide the same service,
+     * the caller name can be used to choose the server to achieve load balance.
+     * <blockquote><pre>
+     *     String[] serverIps = new String[10];
+     *     int index = shakeUp("callerName", serverIps.length);
+     *     String targetServerIp = serverIps[index];
+     * </pre></blockquote>
+     *
+     * @param string     a string. the number 0 will be returned if it's null
+     * @param upperLimit the upper limit of the returned number, must be a positive integer, which means > 0
+     * @return a number between 0(inclusive) and upperLimit(exclusive)
+     * @throws IllegalArgumentException if the upper limit equals or less than 0
+     * @since 1.0.0
+     * @author jifengnan
+     */
+    public static int shakeUp(String string, int upperLimit) {
+        if (upperLimit < 1) {
+            throw new IllegalArgumentException("upper limit must be greater than 0");
+        }
+        if (string == null) {
+            return 0;
+        }
+        return (string.hashCode() & Integer.MAX_VALUE) % upperLimit;
+    }
 }

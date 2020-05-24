@@ -16,7 +16,6 @@
  */
 package com.alibaba.nacos.core.distributed.distro.utils;
 
-import com.alibaba.nacos.core.distributed.distro.exception.ExtendedStatusRuntimeException;
 import com.google.common.base.Preconditions;
 import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
@@ -30,25 +29,31 @@ public final class DistroUtils {
 
 	private DistroUtils() {}
 
+	public static final String ALL_GROUP = "*";
+
+	public static final String FINISHED = "finished";
+
 	public static final String REQUEST_ID_KEY = "requestId";
 
-	public static ExtendedStatusRuntimeException fromThrowable(Throwable t) {
+	public static final String REMOTE_SERVER_KEY = "remoteServer";
+
+	public static StatusRuntimeException fromThrowable(Throwable t) {
 		Throwable cause = Preconditions.checkNotNull(t);
 		// 循环渐进，逐层检查
 		while (cause != null) {
 			if (cause instanceof StatusException) {
 				//StatusException就直接取status属性
-				return new ExtendedStatusRuntimeException(((StatusException) cause).getStatus());
+				return new StatusRuntimeException(((StatusException) cause).getStatus());
 			} else if (cause instanceof StatusRuntimeException) {
 				//StatusRuntimeException也是直接取status属性
-				return new ExtendedStatusRuntimeException(((StatusException) cause).getStatus());
+				return new StatusRuntimeException(((StatusException) cause).getStatus());
 			}
 			//不是的话就继续检查cause
 			cause = cause.getCause();
 		}
 
 		//最后如果还是找不到任何Status，就只能给 UNKNOWN
-		return new ExtendedStatusRuntimeException(UNKNOWN.withCause(t));
+		return new StatusRuntimeException(UNKNOWN.withCause(t));
 	}
 
 }

@@ -29,20 +29,27 @@ service DistroService {
 
     }
 
-    rpc acquire(stream Request) returns (stream Response) {
+    rpc acquire(stream Request) returns (stream Value) {
 
     }
 
 }
 
+message Record {
+    bytes data = 1;
+    string checkSum = 2;
+}
+
 message Value {
     string group = 1;
-    map<string, bytes> data = 2;
+    map<string, Record> data = 2;
+    map<string, string> extendInfo = 3;
 }
 
 message Checksum {
     string group = 1;
-    map<string, bytes> data = 2;
+    map<string, string> data = 2;
+    map<string, string> extendInfo = 3;
 }
 
 message Request {

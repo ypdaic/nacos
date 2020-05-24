@@ -2,18 +2,8 @@ package com.alibaba.nacos.core.distributed.distro.grpc;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  */
@@ -27,29 +17,29 @@ public final class DistroServiceGrpc {
   public static final String SERVICE_NAME = "DistroService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Value,
-      com.alibaba.nacos.core.distributed.distro.grpc.Response> getOnSyncMethod;
+  private static volatile io.grpc.MethodDescriptor<Value,
+      Response> getOnSyncMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "onSync",
-      requestType = com.alibaba.nacos.core.distributed.distro.grpc.Value.class,
-      responseType = com.alibaba.nacos.core.distributed.distro.grpc.Response.class,
+      requestType = Value.class,
+      responseType = Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
-  public static io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Value,
-      com.alibaba.nacos.core.distributed.distro.grpc.Response> getOnSyncMethod() {
-    io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Value, com.alibaba.nacos.core.distributed.distro.grpc.Response> getOnSyncMethod;
+  public static io.grpc.MethodDescriptor<Value,
+      Response> getOnSyncMethod() {
+    io.grpc.MethodDescriptor<Value, Response> getOnSyncMethod;
     if ((getOnSyncMethod = DistroServiceGrpc.getOnSyncMethod) == null) {
       synchronized (DistroServiceGrpc.class) {
         if ((getOnSyncMethod = DistroServiceGrpc.getOnSyncMethod) == null) {
           DistroServiceGrpc.getOnSyncMethod = getOnSyncMethod =
-              io.grpc.MethodDescriptor.<com.alibaba.nacos.core.distributed.distro.grpc.Value, com.alibaba.nacos.core.distributed.distro.grpc.Response>newBuilder()
+              io.grpc.MethodDescriptor.<Value, Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "onSync"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.alibaba.nacos.core.distributed.distro.grpc.Value.getDefaultInstance()))
+                  Value.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.alibaba.nacos.core.distributed.distro.grpc.Response.getDefaultInstance()))
+                  Response.getDefaultInstance()))
               .setSchemaDescriptor(new DistroServiceMethodDescriptorSupplier("onSync"))
               .build();
         }
@@ -58,29 +48,29 @@ public final class DistroServiceGrpc {
     return getOnSyncMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Checksum,
-      com.alibaba.nacos.core.distributed.distro.grpc.Response> getSyncCheckSumMethod;
+  private static volatile io.grpc.MethodDescriptor<Checksum,
+      Response> getSyncCheckSumMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "syncCheckSum",
-      requestType = com.alibaba.nacos.core.distributed.distro.grpc.Checksum.class,
-      responseType = com.alibaba.nacos.core.distributed.distro.grpc.Response.class,
+      requestType = Checksum.class,
+      responseType = Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
-  public static io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Checksum,
-      com.alibaba.nacos.core.distributed.distro.grpc.Response> getSyncCheckSumMethod() {
-    io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Checksum, com.alibaba.nacos.core.distributed.distro.grpc.Response> getSyncCheckSumMethod;
+  public static io.grpc.MethodDescriptor<Checksum,
+      Response> getSyncCheckSumMethod() {
+    io.grpc.MethodDescriptor<Checksum, Response> getSyncCheckSumMethod;
     if ((getSyncCheckSumMethod = DistroServiceGrpc.getSyncCheckSumMethod) == null) {
       synchronized (DistroServiceGrpc.class) {
         if ((getSyncCheckSumMethod = DistroServiceGrpc.getSyncCheckSumMethod) == null) {
           DistroServiceGrpc.getSyncCheckSumMethod = getSyncCheckSumMethod =
-              io.grpc.MethodDescriptor.<com.alibaba.nacos.core.distributed.distro.grpc.Checksum, com.alibaba.nacos.core.distributed.distro.grpc.Response>newBuilder()
+              io.grpc.MethodDescriptor.<Checksum, Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "syncCheckSum"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.alibaba.nacos.core.distributed.distro.grpc.Checksum.getDefaultInstance()))
+                  Checksum.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.alibaba.nacos.core.distributed.distro.grpc.Response.getDefaultInstance()))
+                  Response.getDefaultInstance()))
               .setSchemaDescriptor(new DistroServiceMethodDescriptorSupplier("syncCheckSum"))
               .build();
         }
@@ -89,29 +79,29 @@ public final class DistroServiceGrpc {
     return getSyncCheckSumMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Request,
-      com.alibaba.nacos.core.distributed.distro.grpc.Response> getAcquireMethod;
+  private static volatile io.grpc.MethodDescriptor<Request,
+      Value> getAcquireMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "acquire",
-      requestType = com.alibaba.nacos.core.distributed.distro.grpc.Request.class,
-      responseType = com.alibaba.nacos.core.distributed.distro.grpc.Response.class,
+      requestType = Request.class,
+      responseType = Value.class,
       methodType = io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
-  public static io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Request,
-      com.alibaba.nacos.core.distributed.distro.grpc.Response> getAcquireMethod() {
-    io.grpc.MethodDescriptor<com.alibaba.nacos.core.distributed.distro.grpc.Request, com.alibaba.nacos.core.distributed.distro.grpc.Response> getAcquireMethod;
+  public static io.grpc.MethodDescriptor<Request,
+      Value> getAcquireMethod() {
+    io.grpc.MethodDescriptor<Request, Value> getAcquireMethod;
     if ((getAcquireMethod = DistroServiceGrpc.getAcquireMethod) == null) {
       synchronized (DistroServiceGrpc.class) {
         if ((getAcquireMethod = DistroServiceGrpc.getAcquireMethod) == null) {
           DistroServiceGrpc.getAcquireMethod = getAcquireMethod =
-              io.grpc.MethodDescriptor.<com.alibaba.nacos.core.distributed.distro.grpc.Request, com.alibaba.nacos.core.distributed.distro.grpc.Response>newBuilder()
+              io.grpc.MethodDescriptor.<Request, Value>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "acquire"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.alibaba.nacos.core.distributed.distro.grpc.Request.getDefaultInstance()))
+                  Request.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.alibaba.nacos.core.distributed.distro.grpc.Response.getDefaultInstance()))
+                  Value.getDefaultInstance()))
               .setSchemaDescriptor(new DistroServiceMethodDescriptorSupplier("acquire"))
               .build();
         }
@@ -149,47 +139,47 @@ public final class DistroServiceGrpc {
 
     /**
      */
-    public io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Value> onSync(
-        io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response> responseObserver) {
+    public io.grpc.stub.StreamObserver<Value> onSync(
+        io.grpc.stub.StreamObserver<Response> responseObserver) {
       return asyncUnimplementedStreamingCall(getOnSyncMethod(), responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Checksum> syncCheckSum(
-        io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response> responseObserver) {
+    public io.grpc.stub.StreamObserver<Checksum> syncCheckSum(
+        io.grpc.stub.StreamObserver<Response> responseObserver) {
       return asyncUnimplementedStreamingCall(getSyncCheckSumMethod(), responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Request> acquire(
-        io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response> responseObserver) {
+    public io.grpc.stub.StreamObserver<Request> acquire(
+        io.grpc.stub.StreamObserver<Value> responseObserver) {
       return asyncUnimplementedStreamingCall(getAcquireMethod(), responseObserver);
     }
 
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+    @Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getOnSyncMethod(),
             asyncBidiStreamingCall(
               new MethodHandlers<
-                com.alibaba.nacos.core.distributed.distro.grpc.Value,
-                com.alibaba.nacos.core.distributed.distro.grpc.Response>(
+                Value,
+                Response>(
                   this, METHODID_ON_SYNC)))
           .addMethod(
             getSyncCheckSumMethod(),
             asyncBidiStreamingCall(
               new MethodHandlers<
-                com.alibaba.nacos.core.distributed.distro.grpc.Checksum,
-                com.alibaba.nacos.core.distributed.distro.grpc.Response>(
+                Checksum,
+                Response>(
                   this, METHODID_SYNC_CHECK_SUM)))
           .addMethod(
             getAcquireMethod(),
             asyncBidiStreamingCall(
               new MethodHandlers<
-                com.alibaba.nacos.core.distributed.distro.grpc.Request,
-                com.alibaba.nacos.core.distributed.distro.grpc.Response>(
+                Request,
+                Value>(
                   this, METHODID_ACQUIRE)))
           .build();
     }
@@ -207,7 +197,7 @@ public final class DistroServiceGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected DistroServiceStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new DistroServiceStub(channel, callOptions);
@@ -215,24 +205,24 @@ public final class DistroServiceGrpc {
 
     /**
      */
-    public io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Value> onSync(
-        io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response> responseObserver) {
+    public io.grpc.stub.StreamObserver<Value> onSync(
+        io.grpc.stub.StreamObserver<Response> responseObserver) {
       return asyncBidiStreamingCall(
           getChannel().newCall(getOnSyncMethod(), getCallOptions()), responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Checksum> syncCheckSum(
-        io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response> responseObserver) {
+    public io.grpc.stub.StreamObserver<Checksum> syncCheckSum(
+        io.grpc.stub.StreamObserver<Response> responseObserver) {
       return asyncBidiStreamingCall(
           getChannel().newCall(getSyncCheckSumMethod(), getCallOptions()), responseObserver);
     }
 
     /**
      */
-    public io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Request> acquire(
-        io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response> responseObserver) {
+    public io.grpc.stub.StreamObserver<Request> acquire(
+        io.grpc.stub.StreamObserver<Value> responseObserver) {
       return asyncBidiStreamingCall(
           getChannel().newCall(getAcquireMethod(), getCallOptions()), responseObserver);
     }
@@ -250,7 +240,7 @@ public final class DistroServiceGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected DistroServiceBlockingStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new DistroServiceBlockingStub(channel, callOptions);
@@ -269,7 +259,7 @@ public final class DistroServiceGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected DistroServiceFutureStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new DistroServiceFutureStub(channel, callOptions);
@@ -293,8 +283,8 @@ public final class DistroServiceGrpc {
       this.methodId = methodId;
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         default:
@@ -302,20 +292,20 @@ public final class DistroServiceGrpc {
       }
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_ON_SYNC:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.onSync(
-              (io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response>) responseObserver);
+              (io.grpc.stub.StreamObserver<Response>) responseObserver);
         case METHODID_SYNC_CHECK_SUM:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.syncCheckSum(
-              (io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response>) responseObserver);
+              (io.grpc.stub.StreamObserver<Response>) responseObserver);
         case METHODID_ACQUIRE:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.acquire(
-              (io.grpc.stub.StreamObserver<com.alibaba.nacos.core.distributed.distro.grpc.Response>) responseObserver);
+              (io.grpc.stub.StreamObserver<Value>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -326,12 +316,12 @@ public final class DistroServiceGrpc {
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     DistroServiceBaseDescriptorSupplier() {}
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.alibaba.nacos.core.distributed.distro.grpc.Distro.getDescriptor();
+      return Distro.getDescriptor();
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
       return getFileDescriptor().findServiceByName("DistroService");
     }
@@ -351,7 +341,7 @@ public final class DistroServiceGrpc {
       this.methodName = methodName;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
       return getServiceDescriptor().findMethodByName(methodName);
     }

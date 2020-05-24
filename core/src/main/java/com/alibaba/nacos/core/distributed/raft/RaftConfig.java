@@ -19,14 +19,12 @@ package com.alibaba.nacos.core.distributed.raft;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.consistency.Config;
 import com.alibaba.nacos.consistency.cp.LogProcessor4CP;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -42,13 +40,16 @@ public class RaftConfig implements Config<LogProcessor4CP> {
 
     private Map<String, String> data = Collections.synchronizedMap(new HashMap<>());
     private String selfAddress;
-    private Set<String> members = Collections.synchronizedSet(new HashSet<>());
+    private volatile Set<String> members = Collections.unmodifiableSet(new HashSet<>());
+
+    private static final AtomicReferenceFieldUpdater<RaftConfig, Set> UPDATER =
+            AtomicReferenceFieldUpdater
+                    .newUpdater(RaftConfig.class, Set.class, "members");
 
     @Override
-    public void setMembers(String self, Set<String> members) {
+    public void updateMembers(String self, Set<String> members) {
         this.selfAddress = self;
-        this.members.clear();
-        this.members.addAll(members);
+        UPDATER.compareAndSet(this, members, Collections.unmodifiableSet(members));
     }
 
     @Override
@@ -63,13 +64,18 @@ public class RaftConfig implements Config<LogProcessor4CP> {
 
     @Override
     public void addMembers(Set<String> members) {
-        this.members.addAll(members);
+        HashSet<String> strings = new HashSet<>(this.members);
+        strings.addAll(members);
+        UPDATER.compareAndSet(this, members, Collections.unmodifiableSet(members));
     }
 
     @Override
     public void removeMembers(Set<String> members) {
-        this.members.removeAll(members);
+        HashSet<String> strings = new HashSet<>(this.members);
+        strings.removeAll(members);
+        UPDATER.compareAndSet(this, members, Collections.unmodifiableSet(members));
     }
+
 
     public Map<String, String> getData() {
         return data;

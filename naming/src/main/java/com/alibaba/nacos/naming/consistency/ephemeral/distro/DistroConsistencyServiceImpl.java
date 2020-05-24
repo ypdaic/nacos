@@ -19,6 +19,7 @@ import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.core.cluster.Member;
 import com.alibaba.nacos.core.cluster.ServerMemberManager;
+import com.alibaba.nacos.core.distributed.distro.core.TaskDispatcher;
 import com.alibaba.nacos.core.utils.ApplicationUtils;
 import com.alibaba.nacos.naming.cluster.ServerStatus;
 import com.alibaba.nacos.naming.cluster.transport.Serializer;
@@ -74,9 +75,6 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 
 	@Autowired
 	private DataStore dataStore;
-
-	@Autowired
-	private TaskDispatcher taskDispatcher;
 
 	@Autowired
 	private Serializer serializer;
@@ -153,7 +151,6 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 	@Override
 	public void put(String key, Record value) throws NacosException {
 		onPut(key, value);
-		taskDispatcher.addTask(key);
 	}
 
 	@Override
@@ -193,76 +190,6 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 		}
 
 		notifier.addTask(key, ApplyAction.DELETE);
-	}
-
-	public void onReceiveChecksums(Map<String, String> checksumMap, String server) {
-
-		if (syncChecksumTasks.containsKey(server)) {
-			// Already in process of this server:
-			Loggers.DISTRO.warn("sync checksum task already in process with {}", server);
-			return;
-		}
-
-		syncChecksumTasks.put(server, "1");
-
-		try {
-
-			List<String> toUpdateKeys = new ArrayList<>();
-			List<String> toRemoveKeys = new ArrayList<>();
-			for (Map.Entry<String, String> entry : checksumMap.entrySet()) {
-				if (distroMapper.responsible(KeyBuilder.getServiceName(entry.getKey()))) {
-					// this key should not be sent from remote server:
-					Loggers.DISTRO.error("receive responsible key timestamp of " + entry
-							.getKey() + " from " + server);
-					// abort the procedure:
-					return;
-				}
-
-				if (!dataStore.contains(entry.getKey())
-						|| dataStore.get(entry.getKey()).value == null || !dataStore
-						.get(entry.getKey()).value.getChecksum()
-						.equals(entry.getValue())) {
-					toUpdateKeys.add(entry.getKey());
-				}
-			}
-
-			for (String key : dataStore.keys()) {
-
-				if (!server.equals(distroMapper.mapSrv(KeyBuilder.getServiceName(key)))) {
-					continue;
-				}
-
-				if (!checksumMap.containsKey(key)) {
-					toRemoveKeys.add(key);
-				}
-			}
-
-			if (Loggers.DISTRO.isDebugEnabled()) {
-				Loggers.DISTRO.info("to remove keys: {}, to update keys: {}, source: {}",
-						toRemoveKeys, toUpdateKeys, server);
-			}
-
-			for (String key : toRemoveKeys) {
-				onRemove(key);
-			}
-
-			if (toUpdateKeys.isEmpty()) {
-				return;
-			}
-
-			try {
-				byte[] result = NamingProxy.getData(toUpdateKeys, server);
-				processData(result);
-			}
-			catch (Exception e) {
-				Loggers.DISTRO.error("get data from " + server + " failed!", e);
-			}
-		}
-		finally {
-			// Remove this 'in process' flag:
-			syncChecksumTasks.remove(server);
-		}
-
 	}
 
 	public boolean syncAllDataFromRemote(String server) {

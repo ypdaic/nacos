@@ -16,6 +16,13 @@
  */
 package com.alibaba.nacos.core.distributed.distro.core;
 
+import com.alibaba.nacos.core.distributed.distro.grpc.Record;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -23,10 +30,51 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class KvStorage {
 
-	private final ConcurrentHashMap<String, ConcurrentHashMap<String, Value>> multipleStorage;
+	private final Map<String, Map<String, Record>> multipleStorage;
 
 	public KvStorage() {
-		multipleStorage = new ConcurrentHashMap<>(4);
+		this.multipleStorage = new ConcurrentHashMap<>(4);
 	}
 
+	public boolean contains(final String group, final String key) {
+		return multipleStorage.getOrDefault(group, Collections.emptyMap()).containsKey(key);
+	}
+
+	public void put(final String group, String key, Record value) {
+		multipleStorage.computeIfAbsent(group, s -> new ConcurrentHashMap<>());
+		multipleStorage.getOrDefault(group, Collections.emptyMap()).put(key, value);
+	}
+
+	public Record remove(final String group, final String key) {
+		return multipleStorage.getOrDefault(group, Collections.emptyMap()).remove(key);
+	}
+
+	public Set<String> keys(final String group) {
+		return multipleStorage.getOrDefault(group, Collections.emptyMap()).keySet();
+	}
+
+	public Record get(final String group, final String key) {
+		return multipleStorage.getOrDefault(group, Collections.emptyMap()).get(key);
+	}
+
+	public Map<String, Record> batchGet(final String group, final List<String> keys) {
+		Map<String, Record> map = new HashMap<>(128);
+		Map<String, Record> data = multipleStorage.getOrDefault(group, Collections.emptyMap());
+		if (keys.isEmpty()) {
+			map.putAll(data);
+			return map;
+		}
+		for (String key : keys) {
+			Record value = data.get(key);
+			if (value == null) {
+				continue;
+			}
+			map.put(key, value);
+		}
+		return map;
+	}
+
+	public Map<String, Map<String, Record>> snapshotRead() {
+		return Collections.unmodifiableMap(multipleStorage);
+	}
 }

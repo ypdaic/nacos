@@ -34,14 +34,14 @@ import java.util.concurrent.CompletableFuture;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class DistroProtocol
-		extends AbstractConsistencyProtocol<DsitroConfig, LogProcessor4AP>
-		implements APProtocol<DsitroConfig, LogProcessor4AP> {
+		extends AbstractConsistencyProtocol<DistroConfig, LogProcessor4AP>
+		implements APProtocol<DistroConfig, LogProcessor4AP> {
 
 	private DistroServer server;
 
 	@Override
-	public void init(DsitroConfig config) {
-		server = new DistroServer(config);
+	public void init(DistroConfig config) {
+		server = new DistroServer(config, allProcessor());
 		server.start();
 	}
 
@@ -55,17 +55,24 @@ public class DistroProtocol
 		final String group = request.getGroup();
 		LogProcessor processor = findProcessor(group);
 		Objects.requireNonNull(processor, "There is no corresponding processor for " + group);
-		return processor.getData(request);
+		return processor.onRequest(request);
 	}
 
 	@Override
 	public Response submit(Log data) throws Exception {
-		return null;
+		final String group = data.getGroup();
+		LogProcessor processor = findProcessor(group);
+		Objects.requireNonNull(processor, "There is no corresponding processor for " + group);
+		return server.apply(data);
 	}
 
 	@Override
 	public CompletableFuture<Response> submitAsync(Log data) {
-		return null;
+		final String group = data.getGroup();
+		LogProcessor processor = findProcessor(group);
+		Objects.requireNonNull(processor, "There is no corresponding processor for " + group);
+		server.apply(data);
+		return CompletableFuture.supplyAsync(() -> server.apply(data));
 	}
 
 	@Override

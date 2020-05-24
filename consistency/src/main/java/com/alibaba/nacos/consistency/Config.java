@@ -41,7 +41,7 @@ public interface Config<L extends LogProcessor> extends Serializable {
      * @param self local node address information, ip:port
      * @param members {@link Set<String>}
      */
-    void setMembers(String self, Set<String> members);
+    void updateMembers(String self, Set<String> members);
 
     /**
      * members join

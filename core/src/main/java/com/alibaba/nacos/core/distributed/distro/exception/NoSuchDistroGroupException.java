@@ -14,35 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.distributed.distro.core;
-
-import com.google.protobuf.ByteString;
-
-import java.io.Serializable;
+package com.alibaba.nacos.core.distributed.distro.exception;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
-public class Value implements Serializable {
+public class NoSuchDistroGroupException extends RuntimeException {
 
-	private static final long serialVersionUID = 841588280864214636L;
+	private static final long serialVersionUID = 1755681688785678765L;
 
-	private ByteString data;
-	private String checkSum;
-
-	public ByteString getData() {
-		return data;
+	public NoSuchDistroGroupException() {
 	}
 
-	public void setData(ByteString data) {
-		this.data = data;
+	public NoSuchDistroGroupException(String message) {
+		super(message);
 	}
 
-	public String getCheckSum() {
-		return checkSum;
+	public NoSuchDistroGroupException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public void setCheckSum(String checkSum) {
-		this.checkSum = checkSum;
+	public NoSuchDistroGroupException(Throwable cause) {
+		super(cause);
+	}
+
+	public NoSuchDistroGroupException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 }
