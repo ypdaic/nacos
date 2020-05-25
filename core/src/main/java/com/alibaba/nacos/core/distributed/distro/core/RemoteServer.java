@@ -191,6 +191,7 @@ public class RemoteServer {
 
 		private void init() {
 			observerOnSync = client.onSync(new StreamObserver<Response>() {
+
 				@Override
 				public void onNext(Response response) {
 
@@ -203,11 +204,12 @@ public class RemoteServer {
 
 				@Override
 				public void onCompleted() {
-
+					observerOnSync.onCompleted();
 				}
 			});
 
 			observerOnCheckSum = client.syncCheckSum(new StreamObserver<Response>() {
+
 				@Override
 				public void onNext(Response response) {
 
@@ -220,7 +222,7 @@ public class RemoteServer {
 
 				@Override
 				public void onCompleted() {
-
+					observerOnCheckSum.onCompleted();
 				}
 			});
 
@@ -241,7 +243,7 @@ public class RemoteServer {
 
 				@Override
 				public void onCompleted() {
-
+					observerOnAcquire.onCompleted();
 				}
 			});
 		}
@@ -254,7 +256,6 @@ public class RemoteServer {
 			final String requestId = value.getExtendInfoOrThrow(DistroUtils.REQUEST_ID_KEY);
 			return execute(requestId, () -> {
 				observerOnSync.onNext(value);
-				observerOnSync.onCompleted();
 			});
 		}
 
@@ -262,7 +263,6 @@ public class RemoteServer {
 			final String requestId = checksum.getExtendInfoOrThrow(DistroUtils.REQUEST_ID_KEY);
 			return execute(requestId, () -> {
 				observerOnCheckSum.onNext(checksum);
-				observerOnCheckSum.onCompleted();
 			});
 		}
 
@@ -270,7 +270,6 @@ public class RemoteServer {
 			final String requestId = request.getExtendInfoOrThrow(DistroUtils.REQUEST_ID_KEY);
 			return execute(requestId, () -> {
 				observerOnAcquire.onNext(request);
-				observerOnAcquire.onCompleted();
 			});
 		}
 

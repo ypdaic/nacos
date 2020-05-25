@@ -72,7 +72,6 @@ public class DistroServiceHandler extends DistroServiceGrpc.DistroServiceImplBas
 						.build();
 
 				responseObserver.onNext(response);
-				responseObserver.onCompleted();
 			}
 
 			@Override
@@ -106,7 +105,6 @@ public class DistroServiceHandler extends DistroServiceGrpc.DistroServiceImplBas
 						.build();
 
 				responseObserver.onNext(response);
-				responseObserver.onCompleted();
 			}
 
 			@Override
@@ -116,7 +114,6 @@ public class DistroServiceHandler extends DistroServiceGrpc.DistroServiceImplBas
 
 			@Override
 			public void onCompleted() {
-				responseObserver.onCompleted();
 			}
 		};
 	}
