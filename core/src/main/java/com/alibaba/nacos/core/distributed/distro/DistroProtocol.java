@@ -16,12 +16,14 @@
  */
 package com.alibaba.nacos.core.distributed.distro;
 
+import com.alibaba.nacos.consistency.ConsistentHash;
 import com.alibaba.nacos.consistency.LogProcessor;
 import com.alibaba.nacos.consistency.ap.APProtocol;
 import com.alibaba.nacos.consistency.ap.LogProcessor4AP;
 import com.alibaba.nacos.consistency.entity.GetRequest;
 import com.alibaba.nacos.consistency.entity.Log;
 import com.alibaba.nacos.consistency.entity.Response;
+import com.alibaba.nacos.core.cluster.ServerMemberManager;
 import com.alibaba.nacos.core.distributed.AbstractConsistencyProtocol;
 import com.alibaba.nacos.core.distributed.distro.core.DistroServer;
 
@@ -31,13 +33,23 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * Distro protocol refers to the process of directly synchronizing the final data stored
+ * among the nodes of the cluster rather than the operation of the data among the nodes.
+ * Therefore, when using this protocol, you need to make sure that the Log you submit is
+ * the final form of the data, not a data operation
+ *
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public class DistroProtocol
 		extends AbstractConsistencyProtocol<DistroConfig, LogProcessor4AP>
 		implements APProtocol<DistroConfig, LogProcessor4AP> {
 
+	private final ServerMemberManager memberManager;
 	private DistroServer server;
+
+	public DistroProtocol(ServerMemberManager memberManager) {
+		this.memberManager = memberManager;
+	}
 
 	@Override
 	public void init(DistroConfig config) {
@@ -60,18 +72,16 @@ public class DistroProtocol
 
 	@Override
 	public Response submit(Log data) throws Exception {
-		final String group = data.getGroup();
-		LogProcessor processor = findProcessor(group);
-		Objects.requireNonNull(processor, "There is no corresponding processor for " + group);
 		return server.apply(data);
 	}
 
 	@Override
+	public Response remove(Log data) throws Exception {
+		return server.remove(data);
+	}
+
+	@Override
 	public CompletableFuture<Response> submitAsync(Log data) {
-		final String group = data.getGroup();
-		LogProcessor processor = findProcessor(group);
-		Objects.requireNonNull(processor, "There is no corresponding processor for " + group);
-		server.apply(data);
 		return CompletableFuture.supplyAsync(() -> server.apply(data));
 	}
 
@@ -83,5 +93,10 @@ public class DistroProtocol
 	@Override
 	public void shutdown() {
 		server.shutdown();
+	}
+
+	@Override
+	public ConsistentHash<String> consistentHash() {
+		return server.getConsistentHash();
 	}
 }

@@ -16,17 +16,15 @@
  */
 package com.alibaba.nacos.core.distributed.distro.core;
 
-import com.alibaba.nacos.consistency.entity.Log;
 import com.alibaba.nacos.core.distributed.distro.grpc.Checksum;
 import com.alibaba.nacos.core.distributed.distro.grpc.DistroServiceGrpc;
+import com.alibaba.nacos.core.distributed.distro.grpc.Load;
+import com.alibaba.nacos.core.distributed.distro.grpc.Merge;
+import com.alibaba.nacos.core.distributed.distro.grpc.Query;
 import com.alibaba.nacos.core.distributed.distro.grpc.Record;
-import com.alibaba.nacos.core.distributed.distro.grpc.Request;
 import com.alibaba.nacos.core.distributed.distro.grpc.Response;
-import com.alibaba.nacos.core.distributed.distro.grpc.Value;
-import com.alibaba.nacos.core.distributed.distro.utils.DistroUtils;
-import com.google.protobuf.ByteString;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
+import com.alibaba.nacos.core.distributed.distro.grpc.Values;
+import com.alibaba.nacos.core.utils.Loggers;
 import io.grpc.stub.StreamObserver;
 
 import java.util.List;
@@ -37,71 +35,49 @@ import java.util.Map;
  */
 public class DistroServiceHandler extends DistroServiceGrpc.DistroServiceImplBase {
 
-	private final byte[] success = new byte[] {0};
-	private final byte[] failed = new byte[] {1};
-
 	private final DistroServer server;
-	private final KvStorage store;
+	private final MultiKvStorage store;
 
-	public DistroServiceHandler(DistroServer server, KvStorage storage) {
+	public DistroServiceHandler(DistroServer server, MultiKvStorage storage) {
 		this.server = server;
 		this.store = storage;
 	}
 
 	@Override
-	public StreamObserver<Value> onSync(StreamObserver<Response> responseObserver) {
-
-		return new StreamObserver<Value>() {
-			@Override
-			public void onNext(Value value) {
-				final String group = value.getGroup();
-				final Map<String, Record> remoteData = value.getDataMap();
-				remoteData.forEach((key, record) -> {
-					final Log log = Log.newBuilder()
-							.setGroup(group)
-							.setKey(key)
-							.setData(record.getData())
-							.build();
-					server.innerApply(group, key, record, log);
-				});
-
-				Response response = Response.newBuilder()
-						.setGroup(group)
-						.setData(ByteString.copyFrom(success))
-						.putExtendInfo(DistroUtils.REQUEST_ID_KEY, value.getExtendInfoOrThrow(DistroUtils.REQUEST_ID_KEY))
-						.build();
-
-				responseObserver.onNext(response);
-			}
-
-			@Override
-			public void onError(Throwable t) {
-				responseObserver.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(t.getMessage())));
-			}
-
-			@Override
-			public void onCompleted() {
-				responseObserver.onCompleted();
-			}
-		};
+	public void load(Load request, StreamObserver<Values> responseObserver) {
+		Map<String, Map<String, Record>> snapshot = store.snapshotRead();
+		snapshot.forEach((group, records) -> responseObserver.onNext(Values.newBuilder()
+				.setGroup(group)
+				.putAllData(records)
+				.build()));
+		responseObserver.onCompleted();
 	}
 
 	@Override
-	public StreamObserver<Checksum> syncCheckSum(
-			StreamObserver<Response> responseObserver) {
+	public void send(Merge request, StreamObserver<Response> responseObserver) {
+		final String group = request.getGroup();
+		try {
+			server.onReceiveRemote(group, request.getDataMap());
+			responseObserver.onNext(Response.newBuilder().setGroup(group).setSuccess(true).build());
+		} catch (Throwable ex) {
+			Loggers.DISTRO.error("An exception occurred to merge the data of the node {} : {}", request.getOrigin(), ex);
+			responseObserver.onNext(Response.newBuilder().setGroup(group)
+					.setSuccess(false).build());
+		}
+	}
 
+	@Override
+	public StreamObserver<Checksum> receive(StreamObserver<Response> responseObserver) {
 		return new StreamObserver<Checksum>() {
 			@Override
 			public void onNext(Checksum value) {
 				final String group = value.getGroup();
+				final String remoteServer = value.getOrigin();
 				final Map<String, String> checksumMap = value.getDataMap();
-				final String remoteServer = value.getDataOrThrow(DistroUtils.REMOTE_SERVER_KEY);
 				server.onReceiveChecksums(group, checksumMap, remoteServer);
 
 				Response response = Response.newBuilder()
 						.setGroup(group)
-						.setData(ByteString.copyFrom(success))
-						.putExtendInfo(DistroUtils.REQUEST_ID_KEY, value.getExtendInfoOrThrow(DistroUtils.REQUEST_ID_KEY))
 						.build();
 
 				responseObserver.onNext(response);
@@ -109,42 +85,36 @@ public class DistroServiceHandler extends DistroServiceGrpc.DistroServiceImplBas
 
 			@Override
 			public void onError(Throwable t) {
-				responseObserver.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(t.getMessage())));
+
 			}
 
 			@Override
 			public void onCompleted() {
+
 			}
 		};
 	}
 
 	@Override
-	public StreamObserver<Request> acquire(StreamObserver<Value> responseObserver) {
-
-		return new StreamObserver<Request>() {
+	public StreamObserver<Query> query(StreamObserver<Values> responseObserver) {
+		return new StreamObserver<Query>() {
 			@Override
-			public void onNext(Request value) {
+			public void onNext(Query value) {
 				final String group = value.getGroup();
 				final List<String> query = value.getKeysList();
 				Map<String, Record> result = store.batchGet(group, query);
-				Value response = Value.newBuilder()
-						.setGroup(group)
-						.putAllData(result)
-						.putExtendInfo(DistroUtils.REQUEST_ID_KEY, value.getExtendInfoOrThrow(DistroUtils.REQUEST_ID_KEY))
-						.build();
-
+				Values response = Values.newBuilder().setGroup(group).putAllData(result).build();
 				responseObserver.onNext(response);
 			}
 
 			@Override
 			public void onError(Throwable t) {
-				responseObserver.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(t.getMessage())));
 			}
 
 			@Override
 			public void onCompleted() {
-				responseObserver.onCompleted();
 			}
 		};
 	}
+
 }

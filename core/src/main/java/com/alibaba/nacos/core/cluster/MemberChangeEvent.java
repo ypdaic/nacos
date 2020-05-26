@@ -26,8 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <ul>
  *     <li>{@link com.alibaba.nacos.core.distributed.ProtocolManager}</li>
- *     <li>{@link com.alibaba.nacos.naming.core.DistroMapper}</li>
- *     <li>{@link com.alibaba.nacos.naming.consistency.persistent.raft.RaftPeerSet}</li>
  * </ul>
  *
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
@@ -38,12 +36,21 @@ public class MemberChangeEvent implements Event {
 
     private static final long serialVersionUID = 7308126651076668976L;
 
+    private String local;
     private Collection<Member> members;
 
     private long no = SEQUENCE.getAndIncrement();
 
     public static MemberChangeEventBuilder builder() {
         return new MemberChangeEventBuilder();
+    }
+
+    public String getLocal() {
+        return local;
+    }
+
+    public void setLocal(String local) {
+        this.local = local;
     }
 
     public Collection<Member> getMembers() {
@@ -60,9 +67,15 @@ public class MemberChangeEvent implements Event {
     }
 
     public static final class MemberChangeEventBuilder {
+        private String local;
         private Collection<Member> allMembers;
 
         private MemberChangeEventBuilder() {
+        }
+
+        public MemberChangeEventBuilder local(String local) {
+            this.local = local;
+            return this;
         }
 
         public MemberChangeEventBuilder members(Collection<Member> allMembers) {
@@ -72,6 +85,7 @@ public class MemberChangeEvent implements Event {
 
         public MemberChangeEvent build() {
             MemberChangeEvent memberChangeEvent = new MemberChangeEvent();
+            memberChangeEvent.setLocal(local);
             memberChangeEvent.setMembers(allMembers);
             return memberChangeEvent;
         }

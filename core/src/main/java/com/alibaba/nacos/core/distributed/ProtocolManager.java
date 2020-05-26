@@ -49,13 +49,10 @@ import java.util.Set;
 @SuppressWarnings("all")
 @Component(value = "ProtocolManager")
 @DependsOn("serverMemberManager")
-public class ProtocolManager
-		implements ApplicationListener<ContextStartedEvent>, DisposableBean,
-		MemberChangeListener {
+public class ProtocolManager implements DisposableBean, MemberChangeListener {
 
 	private CPProtocol cpProtocol;
 	private APProtocol apProtocol;
-	private final ConsistentHash consistentHash = ConsistentHash.getInstance();
 
 	private final ServerMemberManager memberManager;
 
@@ -68,12 +65,7 @@ public class ProtocolManager
 
 	@PostConstruct
 	public void init() {
-		this.consistentHash.init(memberManager.allMembers(), memberManager);
 		NotifyCenter.registerSubscribe(this);
-	}
-
-	public ConsistentHash getConsistentHash() {
-		return consistentHash;
 	}
 
 	// delay init protocol
@@ -105,10 +97,6 @@ public class ProtocolManager
 		if (Objects.nonNull(cpProtocol)) {
 			cpProtocol.shutdown();
 		}
-	}
-
-	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
 	}
 
 	private void initAPProtocol() {

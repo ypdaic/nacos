@@ -3,8 +3,8 @@
 
 package com.alibaba.nacos.core.distributed.distro.grpc;
 
-public interface ChecksumOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:Checksum)
+public interface MergeOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:Merge)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -28,32 +28,32 @@ public interface ChecksumOrBuilder extends
       getOriginBytes();
 
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
   int getDataCount();
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
   boolean containsData(String key);
   /**
    * Use {@link #getDataMap()} instead.
    */
   @Deprecated
-  java.util.Map<String, String>
+  java.util.Map<String, Record>
   getData();
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
-  java.util.Map<String, String>
+  java.util.Map<String, Record>
   getDataMap();
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
 
-  String getDataOrDefault(String key, String defaultValue);
+  Record getDataOrDefault(String key, Record defaultValue);
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
 
-  String getDataOrThrow(String key);
+  Record getDataOrThrow(String key);
 }

@@ -20,21 +20,18 @@ import com.alibaba.nacos.api.exception.NacosUncheckException;
 import com.alibaba.nacos.common.utils.ConcurrentHashSet;
 import com.alibaba.nacos.common.utils.LoggerUtils;
 import com.alibaba.nacos.common.utils.ThreadUtils;
-import com.alibaba.nacos.consistency.IdGenerator;
+import com.alibaba.nacos.consistency.ConsistentHash;
 import com.alibaba.nacos.consistency.ap.LogProcessor4AP;
 import com.alibaba.nacos.consistency.entity.Log;
 import com.alibaba.nacos.consistency.entity.Response;
-import com.alibaba.nacos.core.cluster.Member;
-import com.alibaba.nacos.core.distributed.ConsistentHash;
 import com.alibaba.nacos.core.distributed.distro.DistroConfig;
 import com.alibaba.nacos.core.distributed.distro.exception.NoSuchDistroGroupException;
 import com.alibaba.nacos.core.distributed.distro.grpc.ExceptionListener;
+import com.alibaba.nacos.core.distributed.distro.grpc.Load;
+import com.alibaba.nacos.core.distributed.distro.grpc.Query;
 import com.alibaba.nacos.core.distributed.distro.grpc.Record;
-import com.alibaba.nacos.core.distributed.distro.grpc.Request;
-import com.alibaba.nacos.core.distributed.distro.grpc.Value;
-import com.alibaba.nacos.core.distributed.distro.utils.DistroUtils;
+import com.alibaba.nacos.core.distributed.distro.utils.DistroExecutor;
 import com.alibaba.nacos.core.distributed.distro.utils.ErrorCode;
-import com.alibaba.nacos.core.distributed.id.SnakeFlowerIdGenerator;
 import com.alibaba.nacos.core.utils.ApplicationUtils;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.google.common.hash.Hashing;
@@ -46,12 +43,9 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
-import io.grpc.stub.StreamObserver;
 import io.grpc.util.MutableHandlerRegistry;
-import org.apache.http.util.NetUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,8 +54,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
@@ -77,7 +69,7 @@ public class DistroServer {
 
 	private final AtomicBoolean start = new AtomicBoolean(false);
 
-	private final KvStorage storage;
+	private final MultiKvStorage storage;
 
 	private final DataSyncer syncer;
 
@@ -92,22 +84,26 @@ public class DistroServer {
 
 	private Set<String> syncChecksumTasks = new ConcurrentHashSet<>();
 
-	private IdGenerator generator = new SnakeFlowerIdGenerator();
-
-	private final ConsistentHash consistentHash = ConsistentHash.getInstance();
-
 	private final Map<String, LogProcessor4AP> processor4APMap;
+
+	private final ConsistentHash<String> consistentHash;
 
 	public DistroServer(DistroConfig config,
 			Map<String, LogProcessor4AP> processor4APMap) {
+		DistroExecutor.init(config);
 		this.config = config;
+		this.consistentHash = new ConsistentHash(config.getMembers());
 		this.processor4APMap = processor4APMap;
-		this.remoteServer = new RemoteServer(config);
-		this.storage = new KvStorage();
-		this.syncer = new DataSyncer(config, storage, remoteServer);
+		this.remoteServer = new RemoteServer(config, this);
+		this.storage = new MultiKvStorage();
+		this.syncer = new DataSyncer(config, storage, remoteServer, consistentHash);
 		this.dispatcher = new TaskDispatcher(syncer, config);
 		this.port = Integer.parseInt(config.getSelfMember().split(":")[1]);
 		registerService(new DistroServiceHandler(this, storage));
+	}
+
+	public ConsistentHash<String> getConsistentHash() {
+		return consistentHash;
 	}
 
 	public void start() {
@@ -129,7 +125,10 @@ public class DistroServer {
 			dispatcher.start();
 			remoteServer.start();
 			syncer.start();
-			syncRemoteServerData();
+			CountDownLatch latch = new CountDownLatch(1);
+			DistroExecutor
+					.executeByCommon(() -> loadData(latch));
+			ThreadUtils.latchAwait(latch);
 		}
 		catch (Throwable e) {
 			throw new NacosUncheckException(ErrorCode.DISTRO_START_FAILED.getCode(),
@@ -137,55 +136,8 @@ public class DistroServer {
 		}
 	}
 
-	private void syncRemoteServerData() throws Exception {
-		if (ApplicationUtils.getStandaloneMode()) {
-			return;
-		}
-		// size = 1 means only myself in the list, we need at least one another server alive:
-		while (config.getMembers().size() <= 1) {
-			ThreadUtils.sleep(1_000L);
-			Loggers.DISTRO.info("waiting server list init...");
-		}
-
-		for (final String member : config.getMembers()) {
-			if (Objects.equals(member, ApplicationUtils.getLocalAddress())) {
-				continue;
-			}
-
-			RemoteServer.DistroClient client = remoteServer.findClient(member);
-
-			if (!client.isReady()) {
-				continue;
-			}
-
-			LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "sync from " + member);
-
-			CountDownLatch latch = new CountDownLatch(1);
-
-			// try sync data from remote server:
-			StreamObserver<Request> observer = remoteServer.acquire(DistroUtils.ALL_GROUP,
-					Collections.emptyList(), member, new BiConsumer<Value, Throwable>() {
-						@Override
-						public void accept(Value value, Throwable ex) {
-							final String group = value.getGroup();
-							value.getDataMap().forEach((key, record) -> {
-								innerApply(group, key, record, Log.newBuilder()
-										.setGroup(group)
-										.setKey(key)
-										.setData(record.getData())
-										.build());
-							});
-
-							String isFinished = value.getExtendInfoOrDefault(DistroUtils.FINISHED, "0");
-							if (Objects.equals(isFinished, "1")) {
-								latch.countDown();
-							}
-						}
-					});
-
-			ThreadUtils.latchAwait(latch);
-
-		}
+	public DistroConfig getConfig() {
+		return config;
 	}
 
 	public void registerService(Object ref) {
@@ -216,8 +168,15 @@ public class DistroServer {
 				.orElseThrow(() -> new NoSuchDistroGroupException(group)).onApply(log);
 	}
 
-	void onReceiveChecksums(final String group,
-			final Map<String, String> checksumMap, final String server) {
+	public Response remove(Log log) {
+		final String group = log.getGroup();
+		storage.remove(group, log.getKey());
+		return Optional.ofNullable(processor4APMap.get(group))
+				.orElseThrow(() -> new NoSuchDistroGroupException(group)).onRemove(log);
+	}
+
+	void onReceiveChecksums(final String group, final Map<String, String> checksumMap,
+			final String server) {
 
 		if (syncChecksumTasks.contains(server)) {
 			// Already in process of this server:
@@ -235,7 +194,7 @@ public class DistroServer {
 
 				final String key = entry.getKey();
 
-				if (consistentHash.responibleBySelf(key)) {
+				if (consistentHash.responibleForTarget(key, config.getSelfMember())) {
 					// this key should not be sent from remote server:
 					Loggers.DISTRO.error("receive responsible key timestamp of " + entry
 							.getKey() + " from " + server);
@@ -251,11 +210,9 @@ public class DistroServer {
 			}
 
 			for (String key : storage.keys(group)) {
-
-				if (!Objects.equals(server, consistentHash.distro(key).getAddress())) {
+				if (!Objects.equals(server, consistentHash.distro(key))) {
 					continue;
 				}
-
 				if (!checksumMap.containsKey(key)) {
 					toRemoveKeys.add(key);
 				}
@@ -265,16 +222,22 @@ public class DistroServer {
 					"to remove keys: {}, to update keys: {}, source: {}", toRemoveKeys,
 					toUpdateKeys, server);
 
-			for (String key : toRemoveKeys) {
-				// need to remove
-			}
+			storage.batchRemove(group, toRemoveKeys);
+			final LogProcessor4AP processor = processor4APMap.get(group);
+			Optional.ofNullable(processor).ifPresent(p -> {
+				for (String key : toRemoveKeys) {
+					p.onRemove(Log.newBuilder().setKey(key).build());
+				}
+			});
 
 			if (toUpdateKeys.isEmpty()) {
 				return;
 			}
 
 			try {
-				Value result = remoteServer.acquire(group, toUpdateKeys, server);
+				remoteServer.findClient(server)
+						.query(Query.newBuilder().setGroup(group).addAllKeys(toUpdateKeys)
+								.build());
 			}
 			catch (Exception e) {
 				Loggers.DISTRO.error("get data from " + server + " failed!", e);
@@ -284,7 +247,51 @@ public class DistroServer {
 			// Remove this 'in process' flag:
 			syncChecksumTasks.remove(server);
 		}
+	}
 
+	private void loadData(CountDownLatch latch) {
+		if (ApplicationUtils.getStandaloneMode()) {
+			return;
+		}
+		// size = 1 means only myself in the list, we need at least one another server alive:
+		while (config.getMembers().size() <= 1) {
+			ThreadUtils.sleep(1_000L);
+			Loggers.DISTRO.info("waiting server list init...");
+		}
+
+		for (; ; ) {
+			for (final String member : config.getMembers()) {
+				if (Objects.equals(member, ApplicationUtils.getLocalAddress())) {
+					continue;
+				}
+				if (remoteFromOneServer(member)) {
+					latch.countDown();
+					return;
+				}
+			}
+		}
+	}
+
+	private boolean remoteFromOneServer(final String member) {
+		RemoteServer.DistroClient client = remoteServer.findClient(member);
+
+		if (!client.isReady()) {
+			return false;
+		}
+
+		LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "sync from " + member);
+
+		// try sync data from remote server:
+		return remoteServer.findClient(member).load(Load.newBuilder().build(),
+				values -> onReceiveRemote(values.getGroup(), values.getDataMap())).join();
+	}
+
+	public void onReceiveRemote(final String group, final Map<String, Record> value) {
+		value.forEach((key, record) -> {
+			final Log log = Log.newBuilder().setGroup(group).setKey(key)
+					.setData(record.getData()).build();
+			innerApply(group, key, record, log);
+		});
 	}
 
 	public void shutdown() {
@@ -293,6 +300,7 @@ public class DistroServer {
 		}
 		server.shutdown();
 		dispatcher.shutdown();
+		remoteServer.shutdown();
 	}
 
 }

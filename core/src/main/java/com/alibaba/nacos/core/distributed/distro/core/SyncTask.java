@@ -23,15 +23,15 @@ import java.util.List;
  */
 public class SyncTask {
 
-    private final String group;
+    private String group;
 
-    private final List<String> keys;
+    private List<String> keys;
 
-    private final int retryCount;
+    private int retryCount;
 
-    private final long lastExecuteTime;
+    private long lastExecuteTime;
 
-    private final String targetServer;
+    private String targetServer;
 
     public SyncTask(String group, List<String> keys, int retryCount, long lastExecuteTime,
             String targetServer) {
@@ -39,6 +39,26 @@ public class SyncTask {
         this.keys = keys;
         this.retryCount = retryCount;
         this.lastExecuteTime = lastExecuteTime;
+        this.targetServer = targetServer;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public void setKeys(List<String> keys) {
+        this.keys = keys;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public void setLastExecuteTime(long lastExecuteTime) {
+        this.lastExecuteTime = lastExecuteTime;
+    }
+
+    public void setTargetServer(String targetServer) {
         this.targetServer = targetServer;
     }
 

@@ -17,9 +17,13 @@
 package com.alibaba.nacos.core.distributed.distro.core;
 
 import com.alibaba.nacos.api.exception.NacosUncheckException;
+import com.alibaba.nacos.common.utils.ConvertUtils;
 import com.alibaba.nacos.common.utils.LoggerUtils;
-import com.alibaba.nacos.core.distributed.ConsistentHash;
+import com.alibaba.nacos.consistency.ConsistentHash;
 import com.alibaba.nacos.core.distributed.distro.DistroConfig;
+import com.alibaba.nacos.core.distributed.distro.DistroSysConstants;
+import com.alibaba.nacos.core.distributed.distro.grpc.Checksum;
+import com.alibaba.nacos.core.distributed.distro.grpc.Merge;
 import com.alibaba.nacos.core.distributed.distro.grpc.Record;
 import com.alibaba.nacos.core.distributed.distro.utils.DistroExecutor;
 import com.alibaba.nacos.core.distributed.distro.utils.ErrorCode;
@@ -42,16 +46,18 @@ public class DataSyncer {
 	public static final String CACHE_KEY_SPLITER = "@@@@";
 
 	private final DistroConfig config;
-	private final KvStorage storage;;
+	private final MultiKvStorage storage;
 	private final RemoteServer remoteServer;
-	private final ConsistentHash consistentHash = ConsistentHash.getInstance();
+	private final ConsistentHash<String> consistentHash;
 
 	private Map<String, String> taskRecord = new ConcurrentHashMap<>();
 
-	public DataSyncer(DistroConfig config, KvStorage storage, RemoteServer remoteServer) {
+	public DataSyncer(DistroConfig config, MultiKvStorage storage, RemoteServer remoteServer,
+			ConsistentHash<String> consistentHash) {
 		this.config = config;
 		this.storage = storage;
 		this.remoteServer = remoteServer;
+		this.consistentHash = consistentHash;
 	}
 
 	public void start() {
@@ -64,7 +70,8 @@ public class DataSyncer {
 			Iterator<String> iterator = task.getKeys().iterator();
 			while (iterator.hasNext()) {
 				String key = iterator.next();
-				if (StringUtils.isNotBlank(taskRecord.putIfAbsent(buildKey(task.getGroup(), key, task.getTargetServer()), key))) {
+				if (StringUtils.isNotBlank(taskRecord.putIfAbsent(
+						buildKey(task.getGroup(), key, task.getTargetServer()), key))) {
 					// associated key already exist:
 					if (Loggers.DISTRO.isDebugEnabled()) {
 						Loggers.DISTRO.debug("sync already in process, key: {}", key);
@@ -89,7 +96,8 @@ public class DataSyncer {
 			final String group = task.getGroup();
 			final List<String> keys = task.getKeys();
 
-			LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "try to sync data for this keys {}.", keys);
+			LoggerUtils.printIfDebugEnabled(Loggers.DISTRO,
+					"try to sync data for this keys {}.", keys);
 
 			// 2. get the datums by keys and check the datum is empty or not
 			Map<String, Record> datumMap = storage.batchGet(group, keys);
@@ -102,24 +110,25 @@ public class DataSyncer {
 			}
 
 			long timestamp = System.currentTimeMillis();
-			remoteServer.syncData(group, datumMap, task.getTargetServer()).whenComplete((success, ex) -> {
+			final String server = task.getTargetServer();
+			remoteServer.findClient(server).sendMergeReq(
+					Merge.newBuilder().setGroup(group).setOrigin(config.getSelfMember())
+							.putAllData(datumMap).build()).whenComplete((result, ex) -> {
 				if (Objects.nonNull(ex)) {
-					success = false;
-					Loggers.DISTRO.error("Synchronization data is abnormal : {}", ex.toString());
+					result = false;
+					Loggers.DISTRO.error("Synchronization data is abnormal : {}",
+							ex.toString());
 				}
-				if (!success) {
-					SyncTask syncTask = SyncTask.builder()
-							.group(group)
-							.keys(task.getKeys())
-							.lastExecuteTime(timestamp)
-							.retryCount(task.getRetryCount() + 1)
-							.targetServer(task.getTargetServer())
-							.build();
-					retrySync(syncTask);
-				} else {
+				if (!result) {
+					task.setLastExecuteTime(timestamp);
+					task.setRetryCount(task.getRetryCount() + 1);
+					retrySync(task);
+				}
+				else {
 					// clear all flags of this task:
 					for (String key : task.getKeys()) {
-						taskRecord.remove(buildKey(task.getGroup(), key, task.getTargetServer()));
+						taskRecord.remove(buildKey(task.getGroup(), key,
+								task.getTargetServer()));
 					}
 				}
 			});
@@ -131,7 +140,7 @@ public class DataSyncer {
 		final String server = syncTask.getTargetServer();
 		if (!config.getMembers().contains(server)) {
 			// if server is no longer in healthy server list, ignore this task:
-			//fix #1665 remove existing tasks
+			// fix #1665 remove existing tasks
 			if (syncTask.getKeys() != null) {
 				for (String key : syncTask.getKeys()) {
 					taskRecord.remove(buildKey(syncTask.getGroup(), key, server));
@@ -141,7 +150,9 @@ public class DataSyncer {
 		}
 
 		// TODO may choose other retry policy.
-		submit(syncTask, 5000L);
+		submit(syncTask, ConvertUtils
+				.toLong(config.getVal(DistroSysConstants.SYNC_RETRY_DELAY_KEY),
+						DistroSysConstants.DEFAULT_SYNC_RETRY_DELAY));
 	}
 
 	public class TimedSync implements Runnable {
@@ -150,14 +161,16 @@ public class DataSyncer {
 		public void run() {
 
 			try {
-				LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "server list is: {}", config.getMembers());
+				LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "server list is: {}",
+						config.getMembers());
 
 				// send local timestamps to other servers:
 				storage.snapshotRead().forEach((group, valueMap) -> {
 					Map<String, String> keyChecksums = new HashMap<>(64);
 
 					valueMap.forEach((key, value) -> {
-						if (!consistentHash.responibleBySelf(key)) {
+						if (!consistentHash
+								.responibleForTarget(key, config.getSelfMember())) {
 							return;
 						}
 						keyChecksums.put(key, value.getCheckSum());
@@ -166,29 +179,38 @@ public class DataSyncer {
 					if (keyChecksums.isEmpty()) {
 						return;
 					}
-					LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "sync checksums: {}", keyChecksums);
+					LoggerUtils.printIfDebugEnabled(Loggers.DISTRO, "sync checksums: {}",
+							keyChecksums);
 
+					// TODO There will be a broadcast storm
 					for (final String member : config.getMembers()) {
 						if (Objects.equals(ApplicationUtils.getLocalAddress(), member)) {
 							continue;
 						}
 						try {
-							remoteServer.syncCheckSums(group, keyChecksums, member);
-						} catch (Throwable ex) {
-							throw new NacosUncheckException(ErrorCode.DISTRO_START_FAILED.getCode(), ex);
+							remoteServer.findClient(member).pullByChecksum(
+									Checksum.newBuilder().setGroup(group)
+											.setOrigin(config.getSelfMember())
+											.putAllData(keyChecksums).build());
+						}
+						catch (Throwable ex) {
+							throw new NacosUncheckException(
+									ErrorCode.DISTRO_START_FAILED.getCode(), ex);
 						}
 					}
 				});
 
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				Loggers.DISTRO.error("timed sync task failed.", e);
 			}
 		}
 
 	}
 
-	public String buildKey(final String group, final String key, final String targetServer) {
+	public String buildKey(final String group, final String key,
+			final String targetServer) {
 		return group + CACHE_KEY_SPLITER + key + CACHE_KEY_SPLITER + targetServer;
 	}
-	
+
 }

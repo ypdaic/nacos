@@ -18,6 +18,7 @@ package com.alibaba.nacos.core.distributed.distro.core;
 
 import com.alibaba.nacos.core.distributed.distro.grpc.Record;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,11 +29,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
-public class KvStorage {
+public class MultiKvStorage {
 
 	private final Map<String, Map<String, Record>> multipleStorage;
 
-	public KvStorage() {
+	public MultiKvStorage() {
 		this.multipleStorage = new ConcurrentHashMap<>(4);
 	}
 
@@ -47,6 +48,16 @@ public class KvStorage {
 
 	public Record remove(final String group, final String key) {
 		return multipleStorage.getOrDefault(group, Collections.emptyMap()).remove(key);
+	}
+
+	public void batchRemove(final String group, final Collection<String> keys) {
+		Map<String, Record> map = multipleStorage.getOrDefault(group, Collections.emptyMap());
+		if (map.isEmpty()) {
+			return;
+		}
+		for (final String key : keys) {
+			map.remove(key);
+		}
 	}
 
 	public Set<String> keys(final String group) {

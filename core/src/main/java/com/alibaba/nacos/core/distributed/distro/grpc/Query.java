@@ -4,26 +4,28 @@
 package com.alibaba.nacos.core.distributed.distro.grpc;
 
 /**
- * Protobuf type {@code Response}
+ * Protobuf type {@code Query}
  */
-public  final class Response extends
+public  final class Query extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:Response)
-    ResponseOrBuilder {
+    // @@protoc_insertion_point(message_implements:Query)
+    QueryOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use Response.newBuilder() to construct.
-  private Response(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use Query.newBuilder() to construct.
+  private Query(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private Response() {
+  private Query() {
     group_ = "";
+    origin_ = "";
+    keys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @Override
   @SuppressWarnings({"unused"})
   protected Object newInstance(
       UnusedPrivateParameter unused) {
-    return new Response();
+    return new Query();
   }
 
   @Override
@@ -31,7 +33,7 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private Response(
+  private Query(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -39,6 +41,7 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new NullPointerException();
     }
+    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -55,9 +58,19 @@ private static final long serialVersionUID = 0L;
             group_ = s;
             break;
           }
-          case 16: {
+          case 18: {
+            String s = input.readStringRequireUtf8();
 
-            success_ = input.readBool();
+            origin_ = s;
+            break;
+          }
+          case 26: {
+            String s = input.readStringRequireUtf8();
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              keys_ = new com.google.protobuf.LazyStringArrayList();
+              mutable_bitField0_ |= 0x00000001;
+            }
+            keys_.add(s);
             break;
           }
           default: {
@@ -75,21 +88,24 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000001) != 0)) {
+        keys_ = keys_.getUnmodifiableView();
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return Distro.internal_static_Response_descriptor;
+    return Distro.internal_static_Query_descriptor;
   }
 
   @Override
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return Distro.internal_static_Response_fieldAccessorTable
+    return Distro.internal_static_Query_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            Response.class, Response.Builder.class);
+            Query.class, Query.Builder.class);
   }
 
   public static final int GROUP_FIELD_NUMBER = 1;
@@ -126,13 +142,75 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int SUCCESS_FIELD_NUMBER = 2;
-  private boolean success_;
+  public static final int ORIGIN_FIELD_NUMBER = 2;
+  private volatile Object origin_;
   /**
-   * <code>bool success = 2;</code>
+   * <pre>
+   * if keys is empty, mean query all
+   * </pre>
+   *
+   * <code>string origin = 2;</code>
    */
-  public boolean getSuccess() {
-    return success_;
+  public String getOrigin() {
+    Object ref = origin_;
+    if (ref instanceof String) {
+      return (String) ref;
+    } else {
+      com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
+      String s = bs.toStringUtf8();
+      origin_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * if keys is empty, mean query all
+   * </pre>
+   *
+   * <code>string origin = 2;</code>
+   */
+  public com.google.protobuf.ByteString
+      getOriginBytes() {
+    Object ref = origin_;
+    if (ref instanceof String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (String) ref);
+      origin_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int KEYS_FIELD_NUMBER = 3;
+  private com.google.protobuf.LazyStringList keys_;
+  /**
+   * <code>repeated string keys = 3;</code>
+   */
+  public com.google.protobuf.ProtocolStringList
+      getKeysList() {
+    return keys_;
+  }
+  /**
+   * <code>repeated string keys = 3;</code>
+   */
+  public int getKeysCount() {
+    return keys_.size();
+  }
+  /**
+   * <code>repeated string keys = 3;</code>
+   */
+  public String getKeys(int index) {
+    return keys_.get(index);
+  }
+  /**
+   * <code>repeated string keys = 3;</code>
+   */
+  public com.google.protobuf.ByteString
+      getKeysBytes(int index) {
+    return keys_.getByteString(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -152,8 +230,11 @@ private static final long serialVersionUID = 0L;
     if (!getGroupBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, group_);
     }
-    if (success_ != false) {
-      output.writeBool(2, success_);
+    if (!getOriginBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, origin_);
+    }
+    for (int i = 0; i < keys_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, keys_.getRaw(i));
     }
     unknownFields.writeTo(output);
   }
@@ -167,9 +248,16 @@ private static final long serialVersionUID = 0L;
     if (!getGroupBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, group_);
     }
-    if (success_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(2, success_);
+    if (!getOriginBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, origin_);
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < keys_.size(); i++) {
+        dataSize += computeStringSizeNoTag(keys_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getKeysList().size();
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -181,15 +269,17 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof Response)) {
+    if (!(obj instanceof Query)) {
       return super.equals(obj);
     }
-    Response other = (Response) obj;
+    Query other = (Query) obj;
 
     if (!getGroup()
         .equals(other.getGroup())) return false;
-    if (getSuccess()
-        != other.getSuccess()) return false;
+    if (!getOrigin()
+        .equals(other.getOrigin())) return false;
+    if (!getKeysList()
+        .equals(other.getKeysList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -203,77 +293,80 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + GROUP_FIELD_NUMBER;
     hash = (53 * hash) + getGroup().hashCode();
-    hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getSuccess());
+    hash = (37 * hash) + ORIGIN_FIELD_NUMBER;
+    hash = (53 * hash) + getOrigin().hashCode();
+    if (getKeysCount() > 0) {
+      hash = (37 * hash) + KEYS_FIELD_NUMBER;
+      hash = (53 * hash) + getKeysList().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static Response parseFrom(
+  public static Query parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Response parseFrom(byte[] data)
+  public static Query parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Response parseFrom(java.io.InputStream input)
+  public static Query parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Response parseDelimitedFrom(java.io.InputStream input)
+  public static Query parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static Response parseDelimitedFrom(
+  public static Query parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Response parseFrom(
+  public static Query parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -286,7 +379,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(Response prototype) {
+  public static Builder newBuilder(Query prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @Override
@@ -302,26 +395,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code Response}
+   * Protobuf type {@code Query}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:Response)
-      ResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:Query)
+      QueryOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return Distro.internal_static_Response_descriptor;
+      return Distro.internal_static_Query_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return Distro.internal_static_Response_fieldAccessorTable
+      return Distro.internal_static_Query_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Response.class, Response.Builder.class);
+              Query.class, Query.Builder.class);
     }
 
-    // Construct using com.alibaba.nacos.core.distributed.distro.grpc.Response.newBuilder()
+    // Construct using com.alibaba.nacos.core.distributed.distro.grpc.Query.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -341,25 +434,27 @@ private static final long serialVersionUID = 0L;
       super.clear();
       group_ = "";
 
-      success_ = false;
+      origin_ = "";
 
+      keys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
 
     @Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return Distro.internal_static_Response_descriptor;
+      return Distro.internal_static_Query_descriptor;
     }
 
     @Override
-    public Response getDefaultInstanceForType() {
-      return Response.getDefaultInstance();
+    public Query getDefaultInstanceForType() {
+      return Query.getDefaultInstance();
     }
 
     @Override
-    public Response build() {
-      Response result = buildPartial();
+    public Query build() {
+      Query result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -367,10 +462,16 @@ private static final long serialVersionUID = 0L;
     }
 
     @Override
-    public Response buildPartial() {
-      Response result = new Response(this);
+    public Query buildPartial() {
+      Query result = new Query(this);
+      int from_bitField0_ = bitField0_;
       result.group_ = group_;
-      result.success_ = success_;
+      result.origin_ = origin_;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        keys_ = keys_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000001);
+      }
+      result.keys_ = keys_;
       onBuilt();
       return result;
     }
@@ -409,22 +510,33 @@ private static final long serialVersionUID = 0L;
     }
     @Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof Response) {
-        return mergeFrom((Response)other);
+      if (other instanceof Query) {
+        return mergeFrom((Query)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(Response other) {
-      if (other == Response.getDefaultInstance()) return this;
+    public Builder mergeFrom(Query other) {
+      if (other == Query.getDefaultInstance()) return this;
       if (!other.getGroup().isEmpty()) {
         group_ = other.group_;
         onChanged();
       }
-      if (other.getSuccess() != false) {
-        setSuccess(other.getSuccess());
+      if (!other.getOrigin().isEmpty()) {
+        origin_ = other.origin_;
+        onChanged();
+      }
+      if (!other.keys_.isEmpty()) {
+        if (keys_.isEmpty()) {
+          keys_ = other.keys_;
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          ensureKeysIsMutable();
+          keys_.addAll(other.keys_);
+        }
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -441,11 +553,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Response parsedMessage = null;
+      Query parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (Response) e.getUnfinishedMessage();
+        parsedMessage = (Query) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -454,6 +566,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+    private int bitField0_;
 
     private Object group_ = "";
     /**
@@ -524,28 +637,185 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean success_ ;
+    private Object origin_ = "";
     /**
-     * <code>bool success = 2;</code>
+     * <pre>
+     * if keys is empty, mean query all
+     * </pre>
+     *
+     * <code>string origin = 2;</code>
      */
-    public boolean getSuccess() {
-      return success_;
+    public String getOrigin() {
+      Object ref = origin_;
+      if (!(ref instanceof String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        origin_ = s;
+        return s;
+      } else {
+        return (String) ref;
+      }
     }
     /**
-     * <code>bool success = 2;</code>
+     * <pre>
+     * if keys is empty, mean query all
+     * </pre>
+     *
+     * <code>string origin = 2;</code>
      */
-    public Builder setSuccess(boolean value) {
+    public com.google.protobuf.ByteString
+        getOriginBytes() {
+      Object ref = origin_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        origin_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * if keys is empty, mean query all
+     * </pre>
+     *
+     * <code>string origin = 2;</code>
+     */
+    public Builder setOrigin(
+        String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
 
-      success_ = value;
+      origin_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>bool success = 2;</code>
+     * <pre>
+     * if keys is empty, mean query all
+     * </pre>
+     *
+     * <code>string origin = 2;</code>
      */
-    public Builder clearSuccess() {
+    public Builder clearOrigin() {
 
-      success_ = false;
+      origin_ = getDefaultInstance().getOrigin();
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * if keys is empty, mean query all
+     * </pre>
+     *
+     * <code>string origin = 2;</code>
+     */
+    public Builder setOriginBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+
+      origin_ = value;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.LazyStringList keys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private void ensureKeysIsMutable() {
+      if (!((bitField0_ & 0x00000001) != 0)) {
+        keys_ = new com.google.protobuf.LazyStringArrayList(keys_);
+        bitField0_ |= 0x00000001;
+       }
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getKeysList() {
+      return keys_.getUnmodifiableView();
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public int getKeysCount() {
+      return keys_.size();
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public String getKeys(int index) {
+      return keys_.get(index);
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getKeysBytes(int index) {
+      return keys_.getByteString(index);
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public Builder setKeys(
+        int index, String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureKeysIsMutable();
+      keys_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public Builder addKeys(
+        String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureKeysIsMutable();
+      keys_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public Builder addAllKeys(
+        Iterable<String> values) {
+      ensureKeysIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, keys_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public Builder clearKeys() {
+      keys_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string keys = 3;</code>
+     */
+    public Builder addKeysBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      ensureKeysIsMutable();
+      keys_.add(value);
       onChanged();
       return this;
     }
@@ -562,41 +832,41 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:Response)
+    // @@protoc_insertion_point(builder_scope:Query)
   }
 
-  // @@protoc_insertion_point(class_scope:Response)
-  private static final Response DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:Query)
+  private static final Query DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new Response();
+    DEFAULT_INSTANCE = new Query();
   }
 
-  public static Response getDefaultInstance() {
+  public static Query getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Response>
-      PARSER = new com.google.protobuf.AbstractParser<Response>() {
+  private static final com.google.protobuf.Parser<Query>
+      PARSER = new com.google.protobuf.AbstractParser<Query>() {
     @Override
-    public Response parsePartialFrom(
+    public Query parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new Response(input, extensionRegistry);
+      return new Query(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<Response> parser() {
+  public static com.google.protobuf.Parser<Query> parser() {
     return PARSER;
   }
 
   @Override
-  public com.google.protobuf.Parser<Response> getParserForType() {
+  public com.google.protobuf.Parser<Query> getParserForType() {
     return PARSER;
   }
 
   @Override
-  public Response getDefaultInstanceForType() {
+  public Query getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

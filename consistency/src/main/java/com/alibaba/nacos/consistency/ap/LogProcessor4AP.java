@@ -17,10 +17,20 @@
 package com.alibaba.nacos.consistency.ap;
 
 import com.alibaba.nacos.consistency.LogProcessor;
+import com.alibaba.nacos.consistency.entity.Log;
+import com.alibaba.nacos.consistency.entity.Response;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 @SuppressWarnings("all")
 public abstract class LogProcessor4AP extends LogProcessor {
+
+	/**
+	 * Data removal action
+	 *
+	 * @param log {@link Log}
+	 */
+	public abstract Response onRemove(Log log);
+
 }

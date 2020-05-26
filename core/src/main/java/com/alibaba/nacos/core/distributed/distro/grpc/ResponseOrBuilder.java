@@ -18,37 +18,7 @@ public interface ResponseOrBuilder extends
       getGroupBytes();
 
   /**
-   * <code>bytes data = 2;</code>
+   * <code>bool success = 2;</code>
    */
-  com.google.protobuf.ByteString getData();
-
-  /**
-   * <code>map&lt;string, string&gt; extendInfo = 3;</code>
-   */
-  int getExtendInfoCount();
-  /**
-   * <code>map&lt;string, string&gt; extendInfo = 3;</code>
-   */
-  boolean containsExtendInfo(String key);
-  /**
-   * Use {@link #getExtendInfoMap()} instead.
-   */
-  @Deprecated
-  java.util.Map<String, String>
-  getExtendInfo();
-  /**
-   * <code>map&lt;string, string&gt; extendInfo = 3;</code>
-   */
-  java.util.Map<String, String>
-  getExtendInfoMap();
-  /**
-   * <code>map&lt;string, string&gt; extendInfo = 3;</code>
-   */
-
-  String getExtendInfoOrDefault(String key, String defaultValue);
-  /**
-   * <code>map&lt;string, string&gt; extendInfo = 3;</code>
-   */
-
-  String getExtendInfoOrThrow(String key);
+  boolean getSuccess();
 }

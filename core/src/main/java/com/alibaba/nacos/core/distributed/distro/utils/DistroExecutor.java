@@ -45,14 +45,16 @@ public final class DistroExecutor {
 
 	public static void init(DistroConfig config) {
 
-		distroCommonExecutor = ExecutorFactory.newScheduledExecutorService(GROUP, 8,
+		distroCommonExecutor = ExecutorFactory.newScheduledExecutorService(GROUP,
+				8,
 				new NameThreadFactory("com.alibaba.nacos.core.protocol.distro-common"));
 
 		dataSyncExecutor = ExecutorFactory.newScheduledExecutorService(GROUP,
 				Runtime.getRuntime().availableProcessors(),
 				new NameThreadFactory("com.alibaba.nacos.core.protocol.distro.data-syncer"));
 
-		taskDispatchExecutor = ExecutorFactory.newScheduledExecutorService(GROUP, Runtime.getRuntime().availableProcessors(),
+		taskDispatchExecutor = ExecutorFactory.newScheduledExecutorService(GROUP,
+				Runtime.getRuntime().availableProcessors(),
 				new NameThreadFactory("com.alibaba.nacos.naming.distro.task.dispatcher"));
 	}
 

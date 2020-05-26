@@ -4,18 +4,18 @@
 package com.alibaba.nacos.core.distributed.distro.grpc;
 
 /**
- * Protobuf type {@code Checksum}
+ * Protobuf type {@code Values}
  */
-public  final class Checksum extends
+public  final class Values extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:Checksum)
-    ChecksumOrBuilder {
+    // @@protoc_insertion_point(message_implements:Values)
+    ValuesOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use Checksum.newBuilder() to construct.
-  private Checksum(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use Values.newBuilder() to construct.
+  private Values(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private Checksum() {
+  private Values() {
     group_ = "";
     origin_ = "";
   }
@@ -24,7 +24,7 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings({"unused"})
   protected Object newInstance(
       UnusedPrivateParameter unused) {
-    return new Checksum();
+    return new Values();
   }
 
   @Override
@@ -32,7 +32,7 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private Checksum(
+  private Values(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -69,7 +69,7 @@ private static final long serialVersionUID = 0L;
                   DataDefaultEntryHolder.defaultEntry);
               mutable_bitField0_ |= 0x00000001;
             }
-            com.google.protobuf.MapEntry<String, String>
+            com.google.protobuf.MapEntry<String, Record>
             data__ = input.readMessage(
                 DataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
             data_.getMutableMap().put(
@@ -97,7 +97,7 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return Distro.internal_static_Checksum_descriptor;
+    return Distro.internal_static_Values_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -115,9 +115,9 @@ private static final long serialVersionUID = 0L;
   @Override
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return Distro.internal_static_Checksum_fieldAccessorTable
+    return Distro.internal_static_Values_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            Checksum.class, Checksum.Builder.class);
+            Values.class, Values.Builder.class);
   }
 
   public static final int GROUP_FIELD_NUMBER = 1;
@@ -191,18 +191,18 @@ private static final long serialVersionUID = 0L;
   public static final int DATA_FIELD_NUMBER = 3;
   private static final class DataDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<
-        String, String> defaultEntry =
+        String, Record> defaultEntry =
             com.google.protobuf.MapEntry
-            .<String, String>newDefaultInstance(
-                Distro.internal_static_Checksum_DataEntry_descriptor,
+            .<String, Record>newDefaultInstance(
+                Distro.internal_static_Values_DataEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
-                com.google.protobuf.WireFormat.FieldType.STRING,
-                "");
+                com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                Record.getDefaultInstance());
   }
   private com.google.protobuf.MapField<
-      String, String> data_;
-  private com.google.protobuf.MapField<String, String>
+      String, Record> data_;
+  private com.google.protobuf.MapField<String, Record>
   internalGetData() {
     if (data_ == null) {
       return com.google.protobuf.MapField.emptyMapField(
@@ -215,7 +215,7 @@ private static final long serialVersionUID = 0L;
     return internalGetData().getMap().size();
   }
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
 
   public boolean containsData(
@@ -227,36 +227,36 @@ private static final long serialVersionUID = 0L;
    * Use {@link #getDataMap()} instead.
    */
   @Deprecated
-  public java.util.Map<String, String> getData() {
+  public java.util.Map<String, Record> getData() {
     return getDataMap();
   }
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
 
-  public java.util.Map<String, String> getDataMap() {
+  public java.util.Map<String, Record> getDataMap() {
     return internalGetData().getMap();
   }
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
 
-  public String getDataOrDefault(
+  public Record getDataOrDefault(
       String key,
-      String defaultValue) {
+      Record defaultValue) {
     if (key == null) { throw new NullPointerException(); }
-    java.util.Map<String, String> map =
+    java.util.Map<String, Record> map =
         internalGetData().getMap();
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
   /**
-   * <code>map&lt;string, string&gt; data = 3;</code>
+   * <code>map&lt;string, .Record&gt; data = 3;</code>
    */
 
-  public String getDataOrThrow(
+  public Record getDataOrThrow(
       String key) {
     if (key == null) { throw new NullPointerException(); }
-    java.util.Map<String, String> map =
+    java.util.Map<String, Record> map =
         internalGetData().getMap();
     if (!map.containsKey(key)) {
       throw new IllegalArgumentException();
@@ -305,9 +305,9 @@ private static final long serialVersionUID = 0L;
     if (!getOriginBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, origin_);
     }
-    for (java.util.Map.Entry<String, String> entry
+    for (java.util.Map.Entry<String, Record> entry
          : internalGetData().getMap().entrySet()) {
-      com.google.protobuf.MapEntry<String, String>
+      com.google.protobuf.MapEntry<String, Record>
       data__ = DataDefaultEntryHolder.defaultEntry.newBuilderForType()
           .setKey(entry.getKey())
           .setValue(entry.getValue())
@@ -325,10 +325,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof Checksum)) {
+    if (!(obj instanceof Values)) {
       return super.equals(obj);
     }
-    Checksum other = (Checksum) obj;
+    Values other = (Values) obj;
 
     if (!getGroup()
         .equals(other.getGroup())) return false;
@@ -360,69 +360,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Checksum parseFrom(byte[] data)
+  public static Values parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Checksum parseFrom(java.io.InputStream input)
+  public static Values parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Checksum parseDelimitedFrom(java.io.InputStream input)
+  public static Values parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static Checksum parseDelimitedFrom(
+  public static Values parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Checksum parseFrom(
+  public static Values parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -435,7 +435,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(Checksum prototype) {
+  public static Builder newBuilder(Values prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @Override
@@ -451,15 +451,15 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code Checksum}
+   * Protobuf type {@code Values}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:Checksum)
-      ChecksumOrBuilder {
+      // @@protoc_insertion_point(builder_implements:Values)
+      ValuesOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return Distro.internal_static_Checksum_descriptor;
+      return Distro.internal_static_Values_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -487,12 +487,12 @@ private static final long serialVersionUID = 0L;
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return Distro.internal_static_Checksum_fieldAccessorTable
+      return Distro.internal_static_Values_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Checksum.class, Checksum.Builder.class);
+              Values.class, Values.Builder.class);
     }
 
-    // Construct using com.alibaba.nacos.core.distributed.distro.grpc.Checksum.newBuilder()
+    // Construct using com.alibaba.nacos.core.distributed.distro.grpc.Values.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -521,17 +521,17 @@ private static final long serialVersionUID = 0L;
     @Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return Distro.internal_static_Checksum_descriptor;
+      return Distro.internal_static_Values_descriptor;
     }
 
     @Override
-    public Checksum getDefaultInstanceForType() {
-      return Checksum.getDefaultInstance();
+    public Values getDefaultInstanceForType() {
+      return Values.getDefaultInstance();
     }
 
     @Override
-    public Checksum build() {
-      Checksum result = buildPartial();
+    public Values build() {
+      Values result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -539,8 +539,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @Override
-    public Checksum buildPartial() {
-      Checksum result = new Checksum(this);
+    public Values buildPartial() {
+      Values result = new Values(this);
       int from_bitField0_ = bitField0_;
       result.group_ = group_;
       result.origin_ = origin_;
@@ -584,16 +584,16 @@ private static final long serialVersionUID = 0L;
     }
     @Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof Checksum) {
-        return mergeFrom((Checksum)other);
+      if (other instanceof Values) {
+        return mergeFrom((Values)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(Checksum other) {
-      if (other == Checksum.getDefaultInstance()) return this;
+    public Builder mergeFrom(Values other) {
+      if (other == Values.getDefaultInstance()) return this;
       if (!other.getGroup().isEmpty()) {
         group_ = other.group_;
         onChanged();
@@ -619,11 +619,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Checksum parsedMessage = null;
+      Values parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (Checksum) e.getUnfinishedMessage();
+        parsedMessage = (Values) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -773,8 +773,8 @@ private static final long serialVersionUID = 0L;
     }
 
     private com.google.protobuf.MapField<
-        String, String> data_;
-    private com.google.protobuf.MapField<String, String>
+        String, Record> data_;
+    private com.google.protobuf.MapField<String, Record>
     internalGetData() {
       if (data_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
@@ -782,7 +782,7 @@ private static final long serialVersionUID = 0L;
       }
       return data_;
     }
-    private com.google.protobuf.MapField<String, String>
+    private com.google.protobuf.MapField<String, Record>
     internalGetMutableData() {
       onChanged();;
       if (data_ == null) {
@@ -799,7 +799,7 @@ private static final long serialVersionUID = 0L;
       return internalGetData().getMap().size();
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
 
     public boolean containsData(
@@ -811,36 +811,36 @@ private static final long serialVersionUID = 0L;
      * Use {@link #getDataMap()} instead.
      */
     @Deprecated
-    public java.util.Map<String, String> getData() {
+    public java.util.Map<String, Record> getData() {
       return getDataMap();
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
 
-    public java.util.Map<String, String> getDataMap() {
+    public java.util.Map<String, Record> getDataMap() {
       return internalGetData().getMap();
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
 
-    public String getDataOrDefault(
+    public Record getDataOrDefault(
         String key,
-        String defaultValue) {
+        Record defaultValue) {
       if (key == null) { throw new NullPointerException(); }
-      java.util.Map<String, String> map =
+      java.util.Map<String, Record> map =
           internalGetData().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
 
-    public String getDataOrThrow(
+    public Record getDataOrThrow(
         String key) {
       if (key == null) { throw new NullPointerException(); }
-      java.util.Map<String, String> map =
+      java.util.Map<String, Record> map =
           internalGetData().getMap();
       if (!map.containsKey(key)) {
         throw new IllegalArgumentException();
@@ -854,7 +854,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
 
     public Builder removeData(
@@ -868,16 +868,16 @@ private static final long serialVersionUID = 0L;
      * Use alternate mutation accessors instead.
      */
     @Deprecated
-    public java.util.Map<String, String>
+    public java.util.Map<String, Record>
     getMutableData() {
       return internalGetMutableData().getMutableMap();
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
     public Builder putData(
         String key,
-        String value) {
+        Record value) {
       if (key == null) { throw new NullPointerException(); }
       if (value == null) { throw new NullPointerException(); }
       internalGetMutableData().getMutableMap()
@@ -885,11 +885,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>map&lt;string, string&gt; data = 3;</code>
+     * <code>map&lt;string, .Record&gt; data = 3;</code>
      */
 
     public Builder putAllData(
-        java.util.Map<String, String> values) {
+        java.util.Map<String, Record> values) {
       internalGetMutableData().getMutableMap()
           .putAll(values);
       return this;
@@ -907,41 +907,41 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:Checksum)
+    // @@protoc_insertion_point(builder_scope:Values)
   }
 
-  // @@protoc_insertion_point(class_scope:Checksum)
-  private static final Checksum DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:Values)
+  private static final Values DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new Checksum();
+    DEFAULT_INSTANCE = new Values();
   }
 
-  public static Checksum getDefaultInstance() {
+  public static Values getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Checksum>
-      PARSER = new com.google.protobuf.AbstractParser<Checksum>() {
+  private static final com.google.protobuf.Parser<Values>
+      PARSER = new com.google.protobuf.AbstractParser<Values>() {
     @Override
-    public Checksum parsePartialFrom(
+    public Values parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new Checksum(input, extensionRegistry);
+      return new Values(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<Checksum> parser() {
+  public static com.google.protobuf.Parser<Values> parser() {
     return PARSER;
   }
 
   @Override
-  public com.google.protobuf.Parser<Checksum> getParserForType() {
+  public com.google.protobuf.Parser<Values> getParserForType() {
     return PARSER;
   }
 
   @Override
-  public Checksum getDefaultInstanceForType() {
+  public Values getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

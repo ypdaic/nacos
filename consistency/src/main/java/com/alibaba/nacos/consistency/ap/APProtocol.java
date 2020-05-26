@@ -18,11 +18,31 @@ package com.alibaba.nacos.consistency.ap;
 
 import com.alibaba.nacos.consistency.Config;
 import com.alibaba.nacos.consistency.ConsistencyProtocol;
+import com.alibaba.nacos.consistency.ConsistentHash;
+import com.alibaba.nacos.consistency.entity.Log;
+import com.alibaba.nacos.consistency.entity.Response;
 
 /**
+ *
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 @SuppressWarnings("all")
 public interface APProtocol<C extends Config, P extends LogProcessor4AP> extends ConsistencyProtocol<C, P> {
+
+	/**
+	 * Gets a consistent Hash instance
+	 *
+	 * @return {@link ConsistentHash}
+	 */
+	ConsistentHash<String> consistentHash();
+
+	/**
+	 * Data removal operation, Only supported on the AP protocol
+	 *
+	 * @param data {@link Log}
+	 * @return submit operation result
+	 * @throws Exception
+	 */
+	Response remove(Log data) throws Exception;
 
 }

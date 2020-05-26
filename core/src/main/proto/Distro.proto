@@ -21,15 +21,19 @@ option java_package = "com.alibaba.nacos.core.distributed.distro.grpc";
 
 service DistroService {
 
-    rpc onSync(stream Value) returns (stream Response) {
+    rpc load(Load) returns (stream Values) {
 
     }
 
-    rpc syncCheckSum(stream Checksum) returns (stream Response) {
+    rpc send(Merge) returns (Response) {
 
     }
 
-    rpc acquire(stream Request) returns (stream Value) {
+    rpc receive(stream Checksum) returns (stream Response) {
+
+    }
+
+    rpc query(stream Query) returns (stream Values) {
 
     }
 
@@ -40,27 +44,36 @@ message Record {
     string checkSum = 2;
 }
 
-message Value {
+message Load {
+
+}
+
+message Merge {
     string group = 1;
-    map<string, Record> data = 2;
-    map<string, string> extendInfo = 3;
+    string origin = 2;
+    map<string, Record> data = 3;
 }
 
 message Checksum {
     string group = 1;
-    map<string, string> data = 2;
-    map<string, string> extendInfo = 3;
+    string origin = 2;
+    map<string, string> data = 3;
 }
 
-message Request {
+message Query {
     string group = 1;
     // if keys is empty, mean query all
-    repeated string keys = 2;
-    map<string, string> extendInfo = 3;
+    string origin = 2;
+    repeated string keys = 3;
+}
+
+message Values {
+    string group = 1;
+    string origin = 2;
+    map<string, Record> data = 3;
 }
 
 message Response {
     string group = 1;
-    bytes data = 2;
-    map<string, string> extendInfo = 3;
+    bool success = 2;
 }

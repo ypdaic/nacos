@@ -14,16 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.nacos.core.distributed;
+package com.alibaba.nacos.consistency;
 
-import com.alibaba.nacos.common.JustForTest;
 import com.alibaba.nacos.common.utils.ConvertUtils;
-import com.alibaba.nacos.core.cluster.Member;
-import com.alibaba.nacos.core.cluster.MemberChangeEvent;
-import com.alibaba.nacos.core.cluster.MemberChangeListener;
-import com.alibaba.nacos.core.cluster.ServerMemberManager;
-import com.alibaba.nacos.core.notify.NotifyCenter;
-import com.alibaba.nacos.core.utils.ApplicationUtils;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 
@@ -38,72 +31,56 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 @SuppressWarnings("all")
-public final class ConsistentHash implements MemberChangeListener {
+public final class ConsistentHash<T> {
 
 	private static final String CONSISTENT_HASH_NUM_REPLICAS = "nacos.core.consisten-hash.num-replica";
 
-	private static final ConsistentHash INSTANCE = new ConsistentHash();
-
-	static {
-		NotifyCenter.registerSubscribe(INSTANCE);
-	}
-
-	public static ConsistentHash getInstance() {
-		return INSTANCE;
-	}
-
 	private final HashFunction function = Hashing.md5();
 
-	private volatile TreeMap<Integer, Member> circle = new TreeMap<>();
+	private volatile TreeMap<Integer, T> circle = new TreeMap<>();
 
-	private static final AtomicReferenceFieldUpdater<ConsistentHash, TreeMap> UPDATER =
+	private final AtomicReferenceFieldUpdater<ConsistentHash, TreeMap> UPDATER =
 			AtomicReferenceFieldUpdater.newUpdater(ConsistentHash.class, TreeMap.class, "circle");
 
 	private int numberOfReplicas = 64;
 
-	private ServerMemberManager manager;
-
-	private ConsistentHash() {
+	public ConsistentHash(Collection<T> members) {
+		init(members);
 	}
 
-	void init(Collection<Member> members, ServerMemberManager manager) {
-		this.manager = manager;
-		int num = ApplicationUtils.getProperty(CONSISTENT_HASH_NUM_REPLICAS, Integer.class, numberOfReplicas);
+	private void init(Collection<T> members) {
+		int num = Integer.getInteger(CONSISTENT_HASH_NUM_REPLICAS, numberOfReplicas);
 		this.numberOfReplicas = ConvertUtils.convertPow4Two(num);
 
 		adjustCircle(members);
 	}
 
-	public Member distro(Object key) {
+	public T distro(Object key) {
 		Objects.requireNonNull(key, "key");
 		if (circle.isEmpty()) {
 			return null;
 		}
 		int hash = function.hashString(Objects.toString(key), StandardCharsets.UTF_8).asInt();
 		if (!circle.containsKey(hash)) {
-			SortedMap<Integer, Member> tailMap = circle.tailMap(hash);
+			SortedMap<Integer, T> tailMap = circle.tailMap(hash);
 			hash = tailMap.isEmpty() ? circle.firstKey() : tailMap.firstKey();
 		}
 		return circle.get(hash);
 	}
 
-	public boolean responibleBySelf(Object key) {
-		Member member = distro(key);
-		return manager.isSelf(member);
+	public boolean responibleForTarget(Object key, T expect) {
+		final T taregt = distro(key);
+		return Objects.equals(expect, taregt);
 	}
 
-	private void adjustCircle(Collection<Member> members) {
-		TreeMap<Integer, Member> tmp = new TreeMap<>();
-		for (Member member : members) {
+	public void adjustCircle(Collection<T> members) {
+		TreeMap<Integer, T> tmp = new TreeMap<>();
+		for (T t : members) {
 			for (int i = 0; i < numberOfReplicas; i ++) {
-				tmp.put(function.hashString(member.getAddress() + i, StandardCharsets.UTF_8).asInt(), member);
+				tmp.put(function.hashString(Objects.toString(t) + i, StandardCharsets.UTF_8).asInt(), t);
 			}
 		}
 		UPDATER.compareAndSet(this, circle, tmp);
 	}
 
-	@Override
-	public void onEvent(MemberChangeEvent event) {
-		adjustCircle(event.getMembers());
-	}
 }
