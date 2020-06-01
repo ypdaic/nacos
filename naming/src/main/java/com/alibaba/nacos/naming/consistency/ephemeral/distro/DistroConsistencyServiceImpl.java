@@ -333,6 +333,12 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 		}
 	}
 
+    /**
+     * 注册listen，相同的key会存在多个listen
+     * @param key      key of data
+     * @param listener callback of data change
+     * @throws NacosException
+     */
 	@Override
 	public void listen(String key, RecordListener listener) throws NacosException {
 		if (!listeners.containsKey(key)) {

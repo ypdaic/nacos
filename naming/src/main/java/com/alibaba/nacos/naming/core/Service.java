@@ -258,9 +258,14 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
 
     }
 
+    /**
+     * 服务初始化
+     */
     public void init() {
 
+        // 添加客户端心跳检查任务，每5s执行一次
         HealthCheckReactor.scheduleCheck(clientBeatCheckTask);
+
 
         for (Map.Entry<String, Cluster> entry : clusterMap.entrySet()) {
             entry.getValue().setService(this);

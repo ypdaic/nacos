@@ -66,6 +66,7 @@ import org.springframework.util.CollectionUtils;
 /**
  * Core manager storing all services in Nacos
  *
+ * 服务管理者
  * @author nkorange
  */
 @Component
@@ -394,6 +395,13 @@ public class ServiceManager implements RecordListener<Service> {
         consistencyService.put(KeyBuilder.buildServiceMetaKey(service.getNamespaceId(), service.getName()), service);
     }
 
+    /**
+     * 第一次创建时，是一个空的service
+     * @param namespaceId
+     * @param serviceName
+     * @param local
+     * @throws NacosException
+     */
     public void createEmptyService(String namespaceId, String serviceName, boolean local) throws NacosException {
         createServiceIfAbsent(namespaceId, serviceName, local, null);
     }
@@ -601,6 +609,10 @@ public class ServiceManager implements RecordListener<Service> {
         return getService(namespaceId, serviceName) != null;
     }
 
+    /**
+     * 添加服务，以nameSpace区分，然后以服务名区分，服务名用group_name@@server_name 进行拼接
+     * @param service
+     */
     public void putService(Service service) {
         if (!serviceMap.containsKey(service.getNamespaceId())) {
             synchronized (putServiceLock) {
@@ -612,6 +624,11 @@ public class ServiceManager implements RecordListener<Service> {
         serviceMap.get(service.getNamespaceId()).put(service.getName(), service);
     }
 
+    /**
+     * 添加服务并进行初始化
+     * @param service
+     * @throws NacosException
+     */
     private void putServiceAndInit(Service service) throws NacosException {
         putService(service);
         service.init();
