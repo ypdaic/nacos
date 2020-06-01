@@ -67,6 +67,9 @@ public class ClientBeatCheckTask implements Runnable {
         return KeyBuilder.buildServiceMetaKey(service.getNamespaceId(), service.getName());
     }
 
+    /**
+     * 客户端心跳检查任务
+     */
     @Override
     public void run() {
         try {
@@ -82,14 +85,18 @@ public class ClientBeatCheckTask implements Runnable {
 
             // first set health status of instances:
             for (Instance instance : instances) {
+                // 客户端实例最后一次心跳时间间隔大于配置的删除间隔时间，则设置为不健康，默认15s
                 if (System.currentTimeMillis() - instance.getLastBeat() > instance.getInstanceHeartBeatTimeOut()) {
                     if (!instance.isMarked()) {
+                        // 设置健康状态为false
                         if (instance.isHealthy()) {
                             instance.setHealthy(false);
                             Loggers.EVT_LOG.info("{POS} {IP-DISABLED} valid: {}:{}@{}@{}, region: {}, msg: client timeout after {}, last beat: {}",
                                 instance.getIp(), instance.getPort(), instance.getClusterName(), service.getName(),
                                 UtilsAndCommons.LOCALHOST_SITE, instance.getInstanceHeartBeatTimeOut(), instance.getLastBeat());
+                            // 发送服务变更事件
                             getPushService().serviceChanged(service);
+                            // 发送心跳超时事件
                             ApplicationUtils.publishEvent(new InstanceHeartbeatTimeoutEvent(this, instance));
                         }
                     }
@@ -107,6 +114,7 @@ public class ClientBeatCheckTask implements Runnable {
                     continue;
                 }
 
+                // 客户端实例最后一次心跳时间间隔大于配置的删除间隔时间，则删除服务
                 if (System.currentTimeMillis() - instance.getLastBeat() > instance.getIpDeleteTimeout()) {
                     // delete instance
                     Loggers.SRV_LOG.info("[AUTO-DELETE-IP] service: {}, ip: {}", service.getName(), JacksonUtils.toJson(instance));
@@ -120,7 +128,10 @@ public class ClientBeatCheckTask implements Runnable {
 
     }
 
-
+    /**
+     * 发送删除实例请求
+     * @param instance
+     */
     private void deleteIP(Instance instance) {
 
         try {

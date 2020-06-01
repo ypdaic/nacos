@@ -93,6 +93,12 @@ public class NamingProxy {
             + result.code + " msg: " + result.content);
     }
 
+    /**
+     * 调用远端节点接口获取数据
+     * @param server
+     * @return
+     * @throws Exception
+     */
     public static byte[] getAllData(String server) throws Exception {
 
         Map<String, String> params = new HashMap<>(8);

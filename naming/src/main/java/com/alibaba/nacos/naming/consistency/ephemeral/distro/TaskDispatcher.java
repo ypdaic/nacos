@@ -48,8 +48,14 @@ public class TaskDispatcher {
 
     private final int cpuCoreCount = Runtime.getRuntime().availableProcessors();
 
+    /**
+     * 初始化任务派发器
+     */
     @PostConstruct
     public void init() {
+        /**
+         * 创建cpu核数的定时任务
+         */
         for (int i = 0; i < cpuCoreCount; i++) {
             TaskScheduler taskScheduler = new TaskScheduler(i);
             taskSchedulerList.add(taskScheduler);
@@ -58,6 +64,9 @@ public class TaskDispatcher {
     }
 
     public void addTask(String key) {
+        /**
+         * 轮训选择一个定时任务添加任务
+         */
         taskSchedulerList.get(UtilsAndCommons.shakeUp(key, cpuCoreCount)).addTask(key);
     }
 
@@ -75,6 +84,10 @@ public class TaskDispatcher {
             this.index = index;
         }
 
+        /**
+         * 往队列中添加任务
+         * @param key
+         */
         public void addTask(String key) {
             queue.offer(key);
         }
@@ -113,10 +126,15 @@ public class TaskDispatcher {
                     keys.add(key);
                     dataSize++;
 
+                    /**
+                     * 批量同步数量等于1000，或者最后一次处理派发时间大于任务间隔，默认20s，就进行数据向其他服务同步
+                     * 这里还不是真正执行同步的地方
+                     */
                     if (dataSize == partitionConfig.getBatchSyncKeyCount() ||
                         (System.currentTimeMillis() - lastDispatchTime) > partitionConfig.getTaskDispatchPeriod()) {
 
                         for (Member member : dataSyncer.getServers()) {
+                            // 如果刚好选择的是自己就不用同步
                             if (NetUtils.localServer().equals(member.getAddress())) {
                                 continue;
                             }

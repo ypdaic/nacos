@@ -89,6 +89,9 @@ public class DataSyncer {
             return;
         }
 
+        /**
+         * 提交数据同步任务
+         */
         GlobalExecutor.submitDataSync(() -> {
             // 1. check the server
             if (getServers() == null || getServers().isEmpty()) {
@@ -114,6 +117,9 @@ public class DataSyncer {
             byte[] data = serializer.serialize(datumMap);
 
             long timestamp = System.currentTimeMillis();
+            /**
+             * 向其他节点同步数据，将我们的服务列表推送给对方
+             */
             boolean success = NamingProxy.syncData(data, task.getTargetServer());
             if (!success) {
                 SyncTask syncTask = new SyncTask();

@@ -105,6 +105,12 @@ public class InstanceController {
 		}
 	};
 
+    /**
+     * 服务注册接口
+     * @param request
+     * @return
+     * @throws Exception
+     */
 	@CanDistro
 	@PostMapping
 	@Secured(parser = NamingResourceParser.class, action = ActionTypes.WRITE)
@@ -114,8 +120,14 @@ public class InstanceController {
 		final String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID,
 				Constants.DEFAULT_NAMESPACE_ID);
 
+        /**
+         * 封装实例信息
+         */
 		final Instance instance = parseInstance(request);
 
+        /**
+         * 注册实例
+         */
 		serviceManager.registerInstance(namespaceId, serviceName, instance);
 		return "ok";
 	}
@@ -360,6 +372,9 @@ public class InstanceController {
 			clientBeat.setPort(port);
 			clientBeat.setCluster(clusterName);
 		}
+        /**
+         * 更新实例最后一次心跳时间
+         */
 		service.processClientBeat(clientBeat);
 
 		result.put(CommonParams.CODE, NamingResponseCode.OK);
@@ -410,6 +425,7 @@ public class InstanceController {
 		String app = WebUtils.optional(request, "app", "DEFAULT");
 		String metadata = WebUtils.optional(request, "metadata", StringUtils.EMPTY);
 
+		// 从请求参数中获取实例属性并封装
 		Instance instance = getIPAddress(request);
 		instance.setApp(app);
 		instance.setServiceName(serviceName);

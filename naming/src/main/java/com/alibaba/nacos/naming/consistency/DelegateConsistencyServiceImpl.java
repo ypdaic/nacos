@@ -58,6 +58,10 @@ public class DelegateConsistencyServiceImpl implements ConsistencyService {
     public void listen(String key, RecordListener listener) throws NacosException {
 
         // this special key is listened by both:
+        /**
+         * 这里在ServiceManager初始化时，会往persistentConsistencyService，ephemeralConsistencyService
+         * 都注册ServiceManager
+         */
         if (KeyBuilder.SERVICE_META_KEY_PREFIX.equals(key)) {
             persistentConsistencyService.listen(key, listener);
             ephemeralConsistencyService.listen(key, listener);

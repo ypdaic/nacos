@@ -83,6 +83,9 @@ public class ServiceManager implements RecordListener<Service> {
 
     private final Lock lock = new ReentrantLock();
 
+    /**
+     * 这里注入的是DelegateConsistencyServiceImpl
+     */
     @Resource(name = "consistencyDelegate")
     private ConsistencyService consistencyService;
 
@@ -136,6 +139,10 @@ public class ServiceManager implements RecordListener<Service> {
 
         try {
             Loggers.SRV_LOG.info("listen for service meta change");
+            /**
+             * 容器启动时，往consistencyService注册一个监听器，key是com.alibaba.nacos.naming.domains.meta.
+             * 监听器则是自己
+             */
             consistencyService.listen(KeyBuilder.SERVICE_META_KEY_PREFIX, this);
         } catch (NacosException e) {
             Loggers.SRV_LOG.error("listen for service meta change failed!");
@@ -169,6 +176,12 @@ public class ServiceManager implements RecordListener<Service> {
         return KeyBuilder.matchServiceMetaKey(key) && !KeyBuilder.matchSwitchKey(key);
     }
 
+    /**
+     * 监听SERVICE_META_KEY_PREFIX这个key的事件，由DistroConsistencyServiceImpl加载远端节点数据时调用
+     * @param key   target key
+     * @param service
+     * @throws Exception
+     */
     @Override
     public void onChange(String key, Service service) throws Exception {
         try {
@@ -183,14 +196,24 @@ public class ServiceManager implements RecordListener<Service> {
 
             Loggers.RAFT.info("[RAFT-NOTIFIER] datum is changed, key: {}, value: {}", key, service);
 
+            /**
+             * 获取旧的服务
+             */
             Service oldDom = getService(service.getNamespaceId(), service.getName());
 
             if (oldDom != null) {
+                /**
+                 * 更新旧的服务，这里旧的服务可能是通过心跳添加的
+                 */
                 oldDom.update(service);
                 // re-listen to handle the situation when the underlying listener is removed:
+                /**
+                 * 往DistroConsistencyServiceImpl，RaftConsistencyServiceImpl，注册这个Service监听器
+                 */
                 consistencyService.listen(KeyBuilder.buildInstanceListKey(service.getNamespaceId(), service.getName(), true), oldDom);
                 consistencyService.listen(KeyBuilder.buildInstanceListKey(service.getNamespaceId(), service.getName(), false), oldDom);
             } else {
+                // 如果是一个新服务就进行初始化
                 putServiceAndInit(service);
             }
         } catch (Throwable e) {
@@ -407,7 +430,11 @@ public class ServiceManager implements RecordListener<Service> {
     }
 
     public void createServiceIfAbsent(String namespaceId, String serviceName, boolean local, Cluster cluster) throws NacosException {
+
         Service service = getService(namespaceId, serviceName);
+        /**
+         * 不存在服务则创建
+         */
         if (service == null) {
 
             Loggers.SRV_LOG.info("creating empty service {}:{}", namespaceId, serviceName);
@@ -423,8 +450,15 @@ public class ServiceManager implements RecordListener<Service> {
                 service.getClusterMap().put(cluster.getName(), cluster);
             }
             service.validate();
-
+            /**
+             * 服务进行初始化
+             */
             putServiceAndInit(service);
+
+            /**
+             * 临时节点，客户端默认注册的服务实例是临时的
+             * 这里就不走这个逻辑
+             */
             if (!local) {
                 addOrReplaceService(service);
             }
@@ -442,7 +476,7 @@ public class ServiceManager implements RecordListener<Service> {
      * @throws Exception any error occurred in the process
      */
     public void registerInstance(String namespaceId, String serviceName, Instance instance) throws NacosException {
-
+        //  存在服务就不用创建，而只是添加实例，不存在就创建一个新的服务
         createEmptyService(namespaceId, serviceName, instance.isEphemeral());
 
         Service service = getService(namespaceId, serviceName);
@@ -451,7 +485,9 @@ public class ServiceManager implements RecordListener<Service> {
             throw new NacosException(NacosException.INVALID_PARAM,
                 "service not found, namespace: " + namespaceId + ", service: " + serviceName);
         }
-
+        /**
+         * 添加服务实例
+         */
         addInstance(namespaceId, serviceName, instance.isEphemeral(), instance);
     }
 
@@ -478,11 +514,12 @@ public class ServiceManager implements RecordListener<Service> {
         Service service = getService(namespaceId, serviceName);
 
         synchronized (service) {
+            // 获取实例列表
             List<Instance> instanceList = addIpAddresses(service, ephemeral, ips);
 
             Instances instances = new Instances();
             instances.setInstanceList(instanceList);
-
+            // 将服务实例更新到存储介质中
             consistencyService.put(key, instances);
         }
     }
@@ -532,13 +569,22 @@ public class ServiceManager implements RecordListener<Service> {
 
     public List<Instance> updateIpAddresses(Service service, String action, boolean ephemeral, Instance... ips) throws NacosException {
 
+        /**
+         * 从 DistroConsistencyServiceImpl或者RaftConsistencyServiceImpl中获取Datum
+         */
         Datum datum = consistencyService.get(KeyBuilder.buildInstanceListKey(service.getNamespaceId(), service.getName(), ephemeral));
 
+        /**
+         * 获取当前所有的实例信息
+         */
         List<Instance> currentIPs = service.allIPs(ephemeral);
         Map<String, Instance> currentInstances = new HashMap<>(currentIPs.size());
         Set<String> currentInstanceIds = Sets.newHashSet();
 
         for (Instance instance : currentIPs) {
+            /**
+             * 合并Datum，和集群map中的实例信息，Datum认为是旧的实例信息，集群map认为是新的
+             */
             currentInstances.put(instance.toIPAddr(), instance);
             currentInstanceIds.add(instance.getInstanceId());
         }
@@ -632,6 +678,10 @@ public class ServiceManager implements RecordListener<Service> {
     private void putServiceAndInit(Service service) throws NacosException {
         putService(service);
         service.init();
+
+        /**
+         * 往DistroConsistencyServiceImpl，RaftConsistencyServiceImpl，注册这个Service监听器
+         */
         consistencyService.listen(KeyBuilder.buildInstanceListKey(service.getNamespaceId(), service.getName(), true), service);
         consistencyService.listen(KeyBuilder.buildInstanceListKey(service.getNamespaceId(), service.getName(), false), service);
         Loggers.SRV_LOG.info("[NEW-SERVICE] {}", service.toJSON());

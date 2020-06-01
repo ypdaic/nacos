@@ -102,10 +102,15 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 
 	@PostConstruct
 	public void init() {
+	    // 开启加载远端节点数据任务
 		GlobalExecutor.submit(loadDataTask);
+		// 开启事件通知任务
 		GlobalExecutor.submitDistroNotifyTask(notifier);
 	}
 
+    /**
+     * 集群模式下，从其他节点获取服务列表数据
+     */
 	private class LoadDataTask implements Runnable {
 
 		@Override
@@ -129,6 +134,7 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 			return;
 		}
 		// size = 1 means only myself in the list, we need at least one another server alive:
+        // 等待其他节点，如果单机，这里就一直循环了
 		while (memberManager.getServerList().size() <= 1) {
 			Thread.sleep(1000L);
 			Loggers.DISTRO.info("waiting server list init...");
@@ -136,6 +142,7 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 
 		for (Map.Entry<String, Member> entry : memberManager.getServerList().entrySet()) {
 			final String address = entry.getValue().getAddress();
+			// 如果是节点是自己就跳过
 			if (NetUtils.localServer().equals(address)) {
 				continue;
 			}
@@ -143,6 +150,7 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 				Loggers.DISTRO.debug("sync from " + address);
 			}
 			// try sync data from remote server:
+            // 开始同步远端节点数据
 			if (syncAllDataFromRemote(address)) {
 				initialized = true;
 				return;
@@ -153,6 +161,11 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 	@Override
 	public void put(String key, Record value) throws NacosException {
 		onPut(key, value);
+        /**
+         * 每添加一个服务实例，经过一段时间都会同步给其他节点
+         * 只有客户的注册，心跳，更新，才会触发这里的任务派发
+         * 客户端的注册，心跳会随机选择一个节点进行调用
+         */
 		taskDispatcher.addTask(key);
 	}
 
@@ -181,6 +194,9 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 			return;
 		}
 
+        /**
+         * 发送服务变更通知
+         */
 		notifier.addTask(key, ApplyAction.CHANGE);
 	}
 
@@ -278,6 +294,11 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 		}
 	}
 
+    /**
+     * 处理从远端节点获取的数据
+     * @param data
+     * @throws Exception
+     */
 	public void processData(byte[] data) throws Exception {
 		if (data.length > 0) {
 			Map<String, Datum<Instances>> datumMap = serializer
@@ -286,11 +307,21 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 			for (Map.Entry<String, Datum<Instances>> entry : datumMap.entrySet()) {
 				dataStore.put(entry.getKey(), entry.getValue());
 
+                /**
+                 * 如果本地listeners已经包含了这个key，说明不用同步了，否则进行同步
+                 * listeners不包含这个key，说明该服务我本地没有，那么就需要同步该服务
+                 * 这个判断是不明确的，因为可能其他服务接收到的心跳信息会转发到我这边，导致已经通过心跳添加了
+                 * 心跳转发是通过这个DistroFilter过滤器处理的
+                 *
+                 */
 				if (!listeners.containsKey(entry.getKey())) {
 					// pretty sure the service not exist:
 					if (switchDomain.isDefaultInstanceEphemeral()) {
 						// create empty service
 						Loggers.DISTRO.info("creating service {}", entry.getKey());
+                        /**
+                         * 开始创建一个新的服务
+                         */
 						Service service = new Service();
 						String serviceName = KeyBuilder.getServiceName(entry.getKey());
 						String namespaceId = KeyBuilder.getNamespace(entry.getKey());
@@ -300,6 +331,10 @@ public class DistroConsistencyServiceImpl implements EphemeralConsistencyService
 						// now validate the service. if failed, exception will be thrown
 						service.setLastModifiedMillis(System.currentTimeMillis());
 						service.recalculateChecksum();
+                        /**
+                         * 这里监听器默认会有一个ServiceManager，由容器启动时ServiceManager的init方法添加
+                         * 此时会触发ServiceManager的onChange 方法
+                         */
 						listeners.get(KeyBuilder.SERVICE_META_KEY_PREFIX).get(0).onChange(
 								KeyBuilder.buildServiceMetaKey(namespaceId, serviceName),
 								service);

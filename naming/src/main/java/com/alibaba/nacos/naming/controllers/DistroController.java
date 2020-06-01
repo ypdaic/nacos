@@ -62,6 +62,12 @@ public class DistroController {
     @Autowired
     private SwitchDomain switchDomain;
 
+    /**
+     * 接收其他节点服务实例同步的请求
+     * @param dataMap
+     * @return
+     * @throws Exception
+     */
     @PutMapping("/datum")
     public ResponseEntity onSyncDatum(@RequestBody Map<String, Datum<Instances>> dataMap) throws Exception {
 
@@ -74,10 +80,12 @@ public class DistroController {
             if (KeyBuilder.matchEphemeralInstanceListKey(entry.getKey())) {
                 String namespaceId = KeyBuilder.getNamespace(entry.getKey());
                 String serviceName = KeyBuilder.getServiceName(entry.getKey());
+                // 本地不包含这个服务，就创建一个空的服务
                 if (!serviceManager.containService(namespaceId, serviceName)
                     && switchDomain.isDefaultInstanceEphemeral()) {
                     serviceManager.createEmptyService(namespaceId, serviceName, true);
                 }
+                // 更新DataSore
                 consistencyService.onPut(entry.getKey(), entry.getValue().value);
             }
         }
