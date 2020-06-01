@@ -23,6 +23,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.concurrent.*;
 
+import static com.alibaba.nacos.core.utils.ApplicationUtils.NACOS_HOME_KEY;
+
 /**
  * @author nacos
  */
@@ -32,6 +34,7 @@ import java.util.concurrent.*;
 public class Nacos {
 
     public static void main(String[] args) {
+        System.setProperty(NACOS_HOME_KEY, "D:\\code\\nacos\\");
         SpringApplication.run(Nacos.class, args);
     }
 }
