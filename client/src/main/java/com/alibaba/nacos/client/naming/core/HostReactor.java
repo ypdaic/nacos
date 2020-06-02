@@ -236,6 +236,9 @@ public class HostReactor {
             serviceInfoMap.put(serviceObj.getKey(), serviceObj);
 
             updatingMap.put(serviceName, new Object());
+            /**
+             * 调用服务端接口获取服务列表
+             */
             updateServiceNow(serviceName, clusters);
             updatingMap.remove(serviceName);
 
@@ -253,6 +256,9 @@ public class HostReactor {
             }
         }
 
+        /**
+         * 开启定时任务去刷新服务列表
+         */
         scheduleUpdateIfAbsent(serviceName, clusters);
 
         return serviceInfoMap.get(serviceObj.getKey());
