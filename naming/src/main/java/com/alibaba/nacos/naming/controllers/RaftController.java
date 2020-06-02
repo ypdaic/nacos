@@ -68,6 +68,13 @@ public class RaftController {
     @Autowired
     private RaftCore raftCore;
 
+    /**
+     * 接受投票请求
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/vote")
     public JsonNode vote(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -77,6 +84,13 @@ public class RaftController {
         return JacksonUtils.transferToJsonNode(peer);
     }
 
+    /**
+     * 接受心跳信息
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/beat")
     public JsonNode beat(HttpServletRequest request, HttpServletResponse response) throws Exception {
 

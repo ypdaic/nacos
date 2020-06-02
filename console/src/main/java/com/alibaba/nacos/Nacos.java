@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos;
 
+import com.alibaba.nacos.core.utils.ApplicationUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -34,7 +35,9 @@ import static com.alibaba.nacos.core.utils.ApplicationUtils.NACOS_HOME_KEY;
 public class Nacos {
 
     public static void main(String[] args) {
-        System.setProperty(NACOS_HOME_KEY, "D:\\code\\nacos\\");
+//        System.setProperty(NACOS_HOME_KEY, "D:\\code\\nacos\\");
+        System.setProperty(NACOS_HOME_KEY, "/Users/daiyanping/code/nacos/");
+//        ApplicationUtils.setIsStandalone(true);
         SpringApplication.run(Nacos.class, args);
     }
 }

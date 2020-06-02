@@ -134,26 +134,41 @@ public class RaftPeerSet implements MemberChangeListener {
         return peers.size();
     }
 
+    /**
+     * 选取leader
+     * @param candidate
+     * @return
+     */
     public RaftPeer decideLeader(RaftPeer candidate) {
+
+        // 这里的ip是包含ip:port 信息，这里用于更新投票结果，voteFor表示的ip就是胜出的，最多的voteFor将被设置为leader
         peers.put(candidate.ip, candidate);
 
         SortedBag ips = new TreeBag();
         int maxApproveCount = 0;
         String maxApprovePeer = null;
+
+        System.out.println("总的投票信息: " + peers);
         for (RaftPeer peer : peers.values()) {
+            // voteFor为null的过滤掉
             if (StringUtils.isEmpty(peer.voteFor)) {
                 continue;
             }
 
             ips.add(peer.voteFor);
+            // 同一个ip的投票数量大于maxApproveCount
             if (ips.getCount(peer.voteFor) > maxApproveCount) {
+                // 更新maxApproveCount为最新某个ip的投票数量
                 maxApproveCount = ips.getCount(peer.voteFor);
+                // 更新maxApprovePeer为投票数量最多的ip
                 maxApprovePeer = peer.voteFor;
             }
         }
-
+        // 当投票数超过半数
         if (maxApproveCount >= majorityCount()) {
+            // 获取投票最多的节点
             RaftPeer peer = peers.get(maxApprovePeer);
+            // 将其设置为LEADER
             peer.state = RaftPeer.State.LEADER;
 
             if (!Objects.equals(leader, peer)) {

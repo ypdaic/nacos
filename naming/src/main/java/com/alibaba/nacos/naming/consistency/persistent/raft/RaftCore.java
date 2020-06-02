@@ -142,7 +142,13 @@ public class RaftCore {
 
         Loggers.RAFT.info("finish to load data from disk, cost: {} ms.", (System.currentTimeMillis() - start));
 
+        /**
+         * 注册maser 选举定时任务，500ms 执行一次
+         */
         GlobalExecutor.registerMasterElection(new MasterElection());
+        /**
+         * 注册心跳定时任务，500ms 执行一次
+         */
         GlobalExecutor.registerHeartbeat(new HeartBeat());
 
         Loggers.RAFT.info("timer started: leader timeout ms: {}, heart-beat timeout ms: {}",
@@ -361,6 +367,9 @@ public class RaftCore {
 
     }
 
+    /**
+     * master 选举
+     */
     public class MasterElection implements Runnable {
         @Override
         public void run() {
@@ -371,12 +380,15 @@ public class RaftCore {
                 }
 
                 RaftPeer local = peers.local();
+                // 每个机器leaderDueMs初始都是不同的，递减500
                 local.leaderDueMs -= GlobalExecutor.TICK_PERIOD_MS;
 
+                // leaderDueMs小于等于0 才开始进行投票
                 if (local.leaderDueMs > 0) {
                     return;
                 }
 
+                //重置master,心跳等待时间
                 // reset timeout
                 local.resetLeaderDue();
                 local.resetHeartbeatDue();
@@ -388,23 +400,37 @@ public class RaftCore {
 
         }
 
+        /**
+         * 发送投票信息
+         */
         public void sendVote() {
 
+            /**
+             * 获取本机信息，ip 非127.0.0.1，而是外网ip
+             */
             RaftPeer local = peers.get(NetUtils.localServer());
             Loggers.RAFT.info("leader timeout, start voting,leader: {}, term: {}",
                 JacksonUtils.toJson(getLeader()), local.term);
 
             peers.reset();
 
+            // term 进行自增
             local.term.incrementAndGet();
+            // 设置发送投票信息的ip
             local.voteFor = local.ip;
+            // 当前节点状态
             local.state = RaftPeer.State.CANDIDATE;
 
             Map<String, String> params = new HashMap<>(1);
             params.put("vote", JacksonUtils.toJson(local));
+            // 向其他非本机节点发送投票信息
             for (final String server : peers.allServersWithoutMySelf()) {
+                // 投票地址http://127.0.0.1:8849/nacos/v1/ns/raft/vote
                 final String url = buildURL(server, API_VOTE);
                 try {
+                    /**
+                     * 异步发送投票请求
+                     */
                     HttpClient.asyncHttpPost(url, null, params, new AsyncCompletionHandler<Integer>() {
                         @Override
                         public Integer onCompleted(Response response) throws Exception {
@@ -413,10 +439,16 @@ public class RaftCore {
                                 return 1;
                             }
 
+                            /**
+                             * 这里返回的是接受请求的节点，这个节点要么是follow，要么不是
+                             */
                             RaftPeer peer = JacksonUtils.toObj(response.getResponseBody(), RaftPeer.class);
-
+                            System.out.println("返回的节点信息:" + peer);
                             Loggers.RAFT.info("received approve from peer: {}", JacksonUtils.toJson(peer));
 
+                            /**
+                             * 决定leader
+                             */
                             peers.decideLeader(peer);
 
                             return 0;
@@ -430,34 +462,56 @@ public class RaftCore {
     }
 
     public synchronized RaftPeer receivedVote(RaftPeer remote) {
+        /**
+         * 如果本地集群信息中不包含投票服务器则抛异常
+         */
         if (!peers.contains(remote)) {
             throw new IllegalStateException("can not find peer: " + remote.ip);
         }
 
+        /**
+         * 找出本地节点信息
+         */
         RaftPeer local = peers.get(NetUtils.localServer());
+        /**
+         * 如果投票节点的term小于本机
+         */
         if (remote.term.get() <= local.term.get()) {
             String msg = "received illegitimate vote" +
                 ", voter-term:" + remote.term + ", votee-term:" + local.term;
 
             Loggers.RAFT.info(msg);
             if (StringUtils.isEmpty(local.voteFor)) {
+                // 设置voteFor为本机
                 local.voteFor = local.ip;
             }
 
+            /**
+             * 返回本机信息
+             */
+            System.out.println("没有选出follower，本机peer: " + local + "  投票peer: " + remote);
             return local;
         }
 
         local.resetLeaderDue();
 
+        /**
+         * 将本机设置为follower
+         */
         local.state = RaftPeer.State.FOLLOWER;
+        // 设置voteFor为远端节点
         local.voteFor = remote.ip;
+        // 设置term为远端节点信息
         local.term.set(remote.term.get());
 
         Loggers.RAFT.info("vote {} as leader, term: {}", remote.ip, remote.term);
-
+        // 返回更新后的本机节点信息
         return local;
     }
 
+    /**
+     * raft协议心跳
+     */
     public class HeartBeat implements Runnable {
         @Override
         public void run() {
@@ -467,6 +521,7 @@ public class RaftCore {
                     return;
                 }
 
+                // 获取本机节点
                 RaftPeer local = peers.local();
                 local.heartbeatDueMs -= GlobalExecutor.TICK_PERIOD_MS;
                 if (local.heartbeatDueMs > 0) {
@@ -482,8 +537,15 @@ public class RaftCore {
 
         }
 
+        /**
+         * 发送心跳
+         * @throws IOException
+         * @throws InterruptedException
+         */
         public void sendBeat() throws IOException, InterruptedException {
+            // 获取本机节点
             RaftPeer local = peers.local();
+            // 本机不是leader，且不是单机模式才发送心跳
             if (local.state != RaftPeer.State.LEADER && !ApplicationUtils.getStandaloneMode()) {
                 return;
             }
