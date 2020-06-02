@@ -199,6 +199,11 @@ public class RaftStore {
         }
     }
 
+    /**
+     * 将datum 写到文件中
+     * @param datum
+     * @throws Exception
+     */
     public synchronized void write(final Datum datum) throws Exception {
 
         String namespaceId = KeyBuilder.getNamespace(datum.key);

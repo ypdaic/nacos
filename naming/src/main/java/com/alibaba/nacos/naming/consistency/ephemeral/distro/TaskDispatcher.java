@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Data sync task dispatcher
- *
+ * 运行过程中，向其他节点同步服务列表信息
  * @author nkorange
  * @since 1.0.0
  */

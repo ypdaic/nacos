@@ -62,6 +62,9 @@ public class PushReceiver implements Runnable {
         }
     }
 
+    /**
+     * 接收服务端服务变更通知
+     */
     @Override
     public void run() {
         while (true) {
