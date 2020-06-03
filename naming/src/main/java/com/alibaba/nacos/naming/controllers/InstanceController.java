@@ -132,6 +132,12 @@ public class InstanceController {
 		return "ok";
 	}
 
+    /**
+     * 服务剔除，由ClientBeatCheckTask发起
+     * @param request
+     * @return
+     * @throws Exception
+     */
 	@CanDistro
 	@DeleteMapping
 	@Secured(parser = NamingResourceParser.class, action = ActionTypes.WRITE)
