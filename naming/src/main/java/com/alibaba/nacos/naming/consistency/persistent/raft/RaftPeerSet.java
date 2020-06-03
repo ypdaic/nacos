@@ -140,7 +140,9 @@ public class RaftPeerSet implements MemberChangeListener {
         SortedBag ips = new TreeBag();
         int maxApproveCount = 0;
         String maxApprovePeer = null;
+        System.out.println("---------------总的投票信息-----------");
         for (RaftPeer peer : peers.values()) {
+            System.out.println(peer);
             if (StringUtils.isEmpty(peer.voteFor)) {
                 continue;
             }
@@ -155,7 +157,7 @@ public class RaftPeerSet implements MemberChangeListener {
         if (maxApproveCount >= majorityCount()) {
             RaftPeer peer = peers.get(maxApprovePeer);
             peer.state = RaftPeer.State.LEADER;
-
+            System.out.println("选出leader: " + peer);
             if (!Objects.equals(leader, peer)) {
                 leader = peer;
                 ApplicationUtils.publishEvent(new LeaderElectFinishedEvent(this, leader, local()));
@@ -227,6 +229,10 @@ public class RaftPeerSet implements MemberChangeListener {
 
     public int majorityCount() {
         return peers.size() / 2 + 1;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(3 / 2 + 1);
     }
 
     public void reset() {

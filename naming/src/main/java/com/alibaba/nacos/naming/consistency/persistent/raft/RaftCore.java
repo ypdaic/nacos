@@ -371,7 +371,7 @@ public class RaftCore {
 
                 RaftPeer local = peers.local();
                 local.leaderDueMs -= GlobalExecutor.TICK_PERIOD_MS;
-
+                System.out.println("leader选举等待时间: " + local.leaderDueMs);
                 if (local.leaderDueMs > 0) {
                     return;
                 }
@@ -451,7 +451,7 @@ public class RaftCore {
         local.state = RaftPeer.State.FOLLOWER;
         local.voteFor = remote.ip;
         local.term.set(remote.term.get());
-
+        System.out.println("本机为follow: " + local);
         Loggers.RAFT.info("vote {} as leader, term: {}", remote.ip, remote.term);
 
         return local;
