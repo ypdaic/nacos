@@ -141,6 +141,18 @@ public class CatalogController {
         return result;
     }
 
+    /**
+     * nacos 页面查询服务列表接口
+     * @param withInstances
+     * @param namespaceId
+     * @param pageNo
+     * @param pageSize
+     * @param serviceName
+     * @param groupName
+     * @param containedInstance
+     * @param hasIpCount
+     * @return
+     */
     @Secured(parser = NamingResourceParser.class, action = ActionTypes.READ)
     @GetMapping("/services")
     public Object listDetail(@RequestParam(required = false) boolean withInstances,
