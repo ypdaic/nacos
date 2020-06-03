@@ -100,8 +100,14 @@ public class PushService implements ApplicationContextAware, ApplicationListener
 
     static {
         try {
+            /**
+             * 创建一个upd
+             */
             udpSocket = new DatagramSocket();
 
+            /**
+             * 接受upd响应
+             */
             Receiver receiver = new Receiver();
 
             Thread inThread = new Thread(receiver);
@@ -109,6 +115,9 @@ public class PushService implements ApplicationContextAware, ApplicationListener
             inThread.setName("com.alibaba.nacos.naming.push.receiver");
             inThread.start();
 
+            /**
+             * 移除僵尸客户端
+             */
             executorService.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
@@ -148,7 +157,9 @@ public class PushService implements ApplicationContextAware, ApplicationListener
 
                     Map<String, Object> cache = new HashMap<>(16);
                     long lastRefTime = System.nanoTime();
+                    // PushClient 包含要发送的目的地也就是客户端的ip+port
                     for (PushClient client : clients.values()) {
+                        // 剔除僵尸客户端
                         if (client.zombie()) {
                             Loggers.PUSH.debug("client is zombie: " + client.toString());
                             clients.remove(client.toString());
@@ -580,6 +591,7 @@ public class PushService implements ApplicationContextAware, ApplicationListener
             return null;
         }
 
+        // 重试次数大于1，不继续推送了
         if (ackEntry.getRetryTimes() > MAX_RETRY_TIMES) {
             Loggers.PUSH.warn("max re-push times reached, retry times {}, key: {}", ackEntry.retryTimes, ackEntry.key);
             ackMap.remove(ackEntry.key);
@@ -589,6 +601,7 @@ public class PushService implements ApplicationContextAware, ApplicationListener
         }
 
         try {
+            // 总推送次数加1
             if (!ackMap.containsKey(ackEntry.key)) {
                 totalPush++;
             }
@@ -596,10 +609,12 @@ public class PushService implements ApplicationContextAware, ApplicationListener
             udpSendTimeMap.put(ackEntry.key, System.currentTimeMillis());
 
             Loggers.PUSH.info("send udp packet: " + ackEntry.key);
+            // udp 发送消息
             udpSocket.send(ackEntry.origin);
-
+            // 重试次数加1
             ackEntry.increaseRetryTime();
 
+            //10 秒后重试，本身其实不会重试
             executorService.schedule(new Retransmitter(ackEntry), TimeUnit.NANOSECONDS.toMillis(ACK_TIMEOUT_NANOS),
                 TimeUnit.MILLISECONDS);
 
@@ -635,6 +650,9 @@ public class PushService implements ApplicationContextAware, ApplicationListener
         }
     }
 
+    /**
+     * 处理客户端的响应
+     */
     public static class Receiver implements Runnable {
         @Override
         public void run() {
@@ -652,6 +670,7 @@ public class PushService implements ApplicationContextAware, ApplicationListener
                     String ip = socketAddress.getAddress().getHostAddress();
                     int port = socketAddress.getPort();
 
+                    // 响应时间大于默认的ack时间，打印日志
                     if (System.nanoTime() - ackPacket.lastRefTime > ACK_TIMEOUT_NANOS) {
                         Loggers.PUSH.warn("ack takes too long from {} ack json: {}", packet.getSocketAddress(), json);
                     }

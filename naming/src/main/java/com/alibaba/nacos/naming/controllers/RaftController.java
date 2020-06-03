@@ -131,6 +131,13 @@ public class RaftController {
         return "ok";
     }
 
+    /**
+     * leader接收follower 发过来的服务实例添加请求
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/datum")
     public String publish(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -161,6 +168,13 @@ public class RaftController {
         throw new NacosException(NacosException.INVALID_PARAM, "unknown type publish key: " + key);
     }
 
+    /**
+     * leader接收follower 发过来的服务实例删除请求
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @DeleteMapping("/datum")
     public String delete(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -204,6 +218,13 @@ public class RaftController {
         return result;
     }
 
+    /**
+     * follow 新增提交
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/datum/commit")
     public String onPublish(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -236,6 +257,13 @@ public class RaftController {
         return "ok";
     }
 
+    /**
+     * follower 删除提交
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @DeleteMapping("/datum/commit")
     public String onDelete(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
