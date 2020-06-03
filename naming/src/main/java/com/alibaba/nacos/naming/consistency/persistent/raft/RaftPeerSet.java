@@ -148,8 +148,9 @@ public class RaftPeerSet implements MemberChangeListener {
         int maxApproveCount = 0;
         String maxApprovePeer = null;
 
-        System.out.println("总的投票信息: " + peers);
+        System.out.println("--------总的投票信息-----------");
         for (RaftPeer peer : peers.values()) {
+            System.out.println("节点信息：" + peer);
             // voteFor为null的过滤掉
             if (StringUtils.isEmpty(peer.voteFor)) {
                 continue;
@@ -170,6 +171,7 @@ public class RaftPeerSet implements MemberChangeListener {
             RaftPeer peer = peers.get(maxApprovePeer);
             // 将其设置为LEADER
             peer.state = RaftPeer.State.LEADER;
+            System.out.println("选出leader: " + peer);
 
             if (!Objects.equals(leader, peer)) {
                 leader = peer;

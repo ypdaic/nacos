@@ -382,7 +382,7 @@ public class RaftCore {
                 RaftPeer local = peers.local();
                 // 每个机器leaderDueMs初始都是不同的，递减500
                 local.leaderDueMs -= GlobalExecutor.TICK_PERIOD_MS;
-
+                System.out.println("等待时间：" + local.leaderDueMs);
                 // leaderDueMs小于等于0 才开始进行投票
                 if (local.leaderDueMs > 0) {
                     return;
@@ -443,7 +443,6 @@ public class RaftCore {
                              * 这里返回的是接受请求的节点，这个节点要么是follow，要么不是
                              */
                             RaftPeer peer = JacksonUtils.toObj(response.getResponseBody(), RaftPeer.class);
-                            System.out.println("返回的节点信息:" + peer);
                             Loggers.RAFT.info("received approve from peer: {}", JacksonUtils.toJson(peer));
 
                             /**
@@ -487,9 +486,8 @@ public class RaftCore {
             }
 
             /**
-             * 返回本机信息
+             * 返回本机信息，并给自己投票
              */
-            System.out.println("没有选出follower，本机peer: " + local + "  投票peer: " + remote);
             return local;
         }
 
@@ -499,11 +497,11 @@ public class RaftCore {
          * 将本机设置为follower
          */
         local.state = RaftPeer.State.FOLLOWER;
-        // 设置voteFor为远端节点
+        // 给远端节点投票
         local.voteFor = remote.ip;
         // 设置term为远端节点信息
         local.term.set(remote.term.get());
-
+        System.out.println("投票结果，本机为follower: " + local);
         Loggers.RAFT.info("vote {} as leader, term: {}", remote.ip, remote.term);
         // 返回更新后的本机节点信息
         return local;
