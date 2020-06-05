@@ -142,6 +142,8 @@ public class RaftPeerSet implements MemberChangeListener {
     public RaftPeer decideLeader(RaftPeer candidate) {
 
         // 这里的ip是包含ip:port 信息，这里用于更新投票结果，voteFor表示的ip就是胜出的，最多的voteFor将被设置为leader
+        // 这里如果本机已经产生了leader，自己又进行了投票，在term相等的情况下自己给的投票胜利了，此时本机的peers的现状就是本机一张投票，其他机器投票为null，
+        // 此时本机产生不了leader，后续心跳重置leader选举时间，就不会触发选举动作
         peers.put(candidate.ip, candidate);
 
         SortedBag ips = new TreeBag();
@@ -185,6 +187,7 @@ public class RaftPeerSet implements MemberChangeListener {
 
     public RaftPeer makeLeader(RaftPeer candidate) {
         if (!Objects.equals(leader, candidate)) {
+            // 设置leader
             leader = candidate;
             ApplicationUtils.publishEvent(new MakeLeaderEvent(this, leader, local()));
             Loggers.RAFT.info("{} has become the LEADER, local: {}, leader: {}",
@@ -193,7 +196,7 @@ public class RaftPeerSet implements MemberChangeListener {
 
         for (final RaftPeer peer : peers.values()) {
             Map<String, String> params = new HashMap<>(1);
-            // 向其他非leader节点同步peer信息
+            // 向不是leader的peer，但状态是leader的节点发送请求同步其最新peer信息
             if (!Objects.equals(peer, candidate) && peer.state == RaftPeer.State.LEADER) {
                 try {
                     String url = RaftCore.buildURL(peer.ip, RaftCore.API_GET_PEER);
@@ -203,6 +206,7 @@ public class RaftPeerSet implements MemberChangeListener {
                             if (response.getStatusCode() != HttpURLConnection.HTTP_OK) {
                                 Loggers.RAFT.error("[NACOS-RAFT] get peer failed: {}, peer: {}",
                                     response.getResponseBody(), peer.ip);
+                                // 获取失败，直接设置为follower
                                 peer.state = RaftPeer.State.FOLLOWER;
                                 return 1;
                             }

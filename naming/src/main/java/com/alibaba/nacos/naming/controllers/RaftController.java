@@ -105,6 +105,12 @@ public class RaftController {
         return JacksonUtils.transferToJsonNode(peer);
     }
 
+    /**
+     * 获取本机的peer信息，主要是获取其投票信息
+     * @param request
+     * @param response
+     * @return
+     */
     @GetMapping("/peer")
     public JsonNode getPeer(HttpServletRequest request, HttpServletResponse response) {
         List<RaftPeer> peers = raftCore.getPeers();

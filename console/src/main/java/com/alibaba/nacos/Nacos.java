@@ -36,8 +36,9 @@ public class Nacos {
 
     public static void main(String[] args) {
 //        System.setProperty(NACOS_HOME_KEY, "D:\\code\\nacos\\");
-        System.setProperty(NACOS_HOME_KEY, "/Users/daiyanping/code/nacos/");
-//        ApplicationUtils.setIsStandalone(true);
+//        System.setProperty(NACOS_HOME_KEY, "/Users/daiyanping/code/nacos/");
+        System.setProperty("nacos.core.auth.enabled", "true");
+        ApplicationUtils.setIsStandalone(true);
         SpringApplication.run(Nacos.class, args);
     }
 }

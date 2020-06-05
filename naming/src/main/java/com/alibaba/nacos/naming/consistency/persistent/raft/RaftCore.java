@@ -146,11 +146,11 @@ public class RaftCore {
         Loggers.RAFT.info("finish to load data from disk, cost: {} ms.", (System.currentTimeMillis() - start));
 
         /**
-         * 注册maser 选举定时任务，500ms 执行一次
+         * 注册maser 选举定时任务，500ms 执行一次，15秒内发送一次master选举，会被心跳线程重置，不能再触发选举
          */
         GlobalExecutor.registerMasterElection(new MasterElection());
         /**
-         * 注册心跳定时任务，500ms 执行一次
+         * 注册心跳定时任务，500ms 执行一次，5s内发送一次心跳
          */
         GlobalExecutor.registerHeartbeat(new HeartBeat());
 
