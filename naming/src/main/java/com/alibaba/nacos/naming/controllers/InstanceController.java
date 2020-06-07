@@ -231,6 +231,12 @@ public class InstanceController {
 		return "ok";
 	}
 
+    /**
+     * 客户端拉取服务列表
+     * @param request
+     * @return
+     * @throws Exception
+     */
 	@GetMapping("/list")
 	@Secured(parser = NamingResourceParser.class, action = ActionTypes.READ)
 	public ObjectNode list(HttpServletRequest request) throws Exception {
@@ -254,6 +260,9 @@ public class InstanceController {
 		boolean healthyOnly = Boolean
 				.parseBoolean(WebUtils.optional(request, "healthyOnly", "false"));
 
+        /**
+         * 添加客户端upd推送信息
+         */
 		return doSrvIPXT(namespaceId, serviceName, agent, clusters, clientIP, udpPort,
 				env, isCheck, app, tenant, healthyOnly);
 	}

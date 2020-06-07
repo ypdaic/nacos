@@ -91,6 +91,9 @@ public class DistroMapper implements MemberChangeListener {
             return true;
         }
 
+        /**
+         * 通过服务名进行hash，将同一个服务名的请求转发到同一台机器上
+         */
         int target = distroHash(serviceName) % servers.size();
         return target >= index && target <= lastIndex;
     }

@@ -345,10 +345,13 @@ public class RaftCore {
         if (isLeader()) {
             local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);
         } else {
+            // follower + 100 大于远端leader+100
             if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {
                 //set leader term:
+                // 设置本地leader,follower跟随远端leader
                 getLeader().term.set(source.term.get());
                 local.term.set(getLeader().term.get());
+                // follower 加100
             } else {
                 local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);
             }
@@ -532,6 +535,9 @@ public class RaftCore {
             return local;
         }
 
+        /**
+         * 一旦选出leader，立马重置选举等待时间，避免再次发生选举
+         */
         local.resetLeaderDue();
 
         /**
