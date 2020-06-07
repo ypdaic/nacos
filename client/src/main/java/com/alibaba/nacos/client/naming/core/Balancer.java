@@ -63,7 +63,7 @@ public class Balancer {
 
     /**
      * Return one host from the host list by random-weight.
-     *
+     * 根据权重选择机器
      * @param hosts The list of the host.
      * @return The random-weight result of the host
      */

@@ -230,6 +230,9 @@ public class HostReactor {
 
         ServiceInfo serviceObj = getServiceInfo0(serviceName, clusters);
 
+        /**
+         * 启动走这个流程
+         */
         if (null == serviceObj) {
             serviceObj = new ServiceInfo(serviceName, clusters);
 
@@ -241,7 +244,9 @@ public class HostReactor {
              */
             updateServiceNow(serviceName, clusters);
             updatingMap.remove(serviceName);
-
+            /**
+             * 已经在更新了请等待
+             */
         } else if (updatingMap.containsKey(serviceName)) {
 
             if (UPDATE_HOLD_INTERVAL > 0) {
@@ -275,7 +280,9 @@ public class HostReactor {
             if (futureMap.get(ServiceInfo.getKey(serviceName, clusters)) != null) {
                 return;
             }
-
+            /**
+             * 添加定时任务每10s去nacos拉取服务列表
+             */
             ScheduledFuture<?> future = addTask(new UpdateTask(serviceName, clusters));
             futureMap.put(ServiceInfo.getKey(serviceName, clusters), future);
         }
